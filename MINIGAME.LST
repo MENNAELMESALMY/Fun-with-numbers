@@ -1,0 +1,1509 @@
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:26
+                                                             Page     1-1
+
+
+					extrn player:far
+					extrn no0:far
+					extrn no1:far
+					extrn no2:far
+					extrn no3:far
+					extrn no4:far
+					extrn no5:far
+					extrn no6:far
+					extrn no7:far
+					extrn no8:far
+					extrn no9:far
+				.model large
+				.stack 64
+				.data
+ 0000  0005 0006 0007 0008	numarr dw 5,6,7,8,9,3           ;;array for the
+				 numbers that fall from top to bottom(will be r
+				andomally generated afterwards)
+       0009 0003		
+ 000C  0046 00AA 010E 0172	numatx dw 70,170,270,370,470,570;;number positi
+				on in x
+       01D6 023A		
+ 0018  004B			numaty dw 75			;;number positi
+				on in y
+ 001A  00			counter db 0			;;counter of st
+				eps the number array moved to know when to rest
+				art
+ 001B  0000			rand  dw ?			;;save the rand
+				om number
+ 001D  00			right db 0			;;to know if th
+				e player pressed the right arrow to clear
+ 001E  52 69 67 68 74 20	correct db 'Right answer : $'
+       61 6E 73 77 65 72	
+       20 3A 20 24		
+ 002E  57 72 6F 6E 67 20	notcorrect db 'Wrong answers : $'
+       61 6E 73 77 65 72	
+       73 20 3A 20 24		
+ 003F  48 61 72 64 4C 75	lost db 'HardLuck:( Try Again $'
+       63 6B 3A 28 20 54	
+       72 79 20 41 67 61	
+       69 6E 20 24		
+ 0055  43 6F 6E 67 72 61	won db 'Congrats!!Getting Better$'
+       74 73 21 21 47 65	
+       74 74 69 6E 67 20	
+       42 65 74 74 65 72	
+       24			
+ 006E  54 6F 20 50 6C 61	toplay db 'To Play Press Enter$'
+       79 20 50 72 65 73	
+       73 20 45 6E 74 65	
+       72 24			
+ 0082  54 6F 20 45 78 69	toexit db 'To Exit Press Esc$'
+       74 20 50 72 65 73	
+       73 20 45 73 63 24	
+ 0094  00			rightans db 0                   ;;counter of ri
+				ght answers
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:26
+                                                             Page     1-2
+
+
+ 0095  00			wrongans db 0 			;;counter of wr
+				ong answers
+				;;;
+ 0096  00			endflag db 0			;;turn to one i
+				f Esc key is pressed of if the player won/lost 
+				to return to menu and restart
+ 0097  012C			playerx dw 300			;;pikacho posit
+				ion in x
+ 0099  01C2			playery dw 450			;;pikacho posit
+				ion in y
+				;;
+ 009B  0000			op1 dw ?			;;first operand
+				 displayed
+ 009D  0000			op2 dw ?			;;second operan
+				d displayed
+ 009F  00			op db ?				;;operation to 
+				print '+'||'*'||'-'
+ 00A0  00			operation db 0			;;operation 0=>
+				add 1=>sub 2=>mul
+ 00A1  0000			res dw ?			;;expected resu
+				lt
+ 00A3  0004[			numtaken dw 4 dup('$')		;;collected num
+				bers
+	   0024			
+			 ]	
+				
+ 00AB  0000			numchk dw ?			;;the collected
+				 number to compare with expected
+ 00AD  0000			numpointer dw 0			;;to know how m
+				any digits are collected
+ 00AF  00			qflag db 0                      ;;flag to check
+				 if there is already a question in 
+				                                ;;display or no
+				t 0=>no question 1=>question
+ 00B0  00			printx db ?			;;question expe
+				xted pos. to print
+ 00B1  00			printy db 0
+				;;
+ 00B2  0000			xmin dw ?
+ 00B4  0000			xmax dw ?                       ;;to test the u
+				pper limit and the lower limit 
+				                                ;;of each numbe
+				r
+				.code
+				;;;;;;;;;;;;;;;;;;;;;;;;;;;;sound functions;;;d
+				ina alaa wrote it during our team project from 
+				which i took them;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				;;;;;;;;;
+ 0000				rightsound proc far
+ 0000  50			push ax
+ 0001  53			push bx
+ 0002  51			push cx
+ 0003  52			push dx
+ 0004				sound :     
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:26
+                                                             Page     1-3
+
+
+				
+ 0004  BA 07D0			MOV     DX,2000          ; Number of times to r
+				epeat whole routine.
+				
+ 0007  BB 0001			MOV     BX,1             ; Frequency value.
+				
+ 000A  B0 B6			MOV     AL, 10110110B    ; The Magic Number (us
+				e this binary number only)
+ 000C  E6 43			OUT     43H, AL          ; Send it to the initi
+				alizing port 43H Timer 2.
+				
+ 000E				NEXT_FREQUENCY:          ; This is were we will
+				 jump back to 2000 times.
+				
+ 000E  8B C3			MOV     AX, BX           ; Move our Frequency v
+				alue into AX.
+				
+ 0010  E6 42			OUT     42H, AL          ; Send LSB to port 42H
+				.
+ 0012  8A C4			MOV     AL, AH           ; Move MSB into AL  
+ 0014  E6 42			OUT     42H, AL          ; Send MSB to port 42H
+				.
+				
+ 0016  E4 61			IN      AL, 61H          ; Get current value of
+				 port 61H.
+ 0018  0C 03			OR      AL, 00000011B    ; OR AL to this value,
+				 forcing first two bits high.
+ 001A  E6 61			OUT     61H, AL          ; Copy it to port 61H 
+				of the PPI Chip
+				                         ; to turn ON the speak
+				er.
+				
+ 001C  B9 0064			MOV     CX, 100          ; Repeat loop 100 time
+				s
+ 001F				DELAY_LOOP:              ; Here is where we loo
+				p back too.
+ 001F  E2 FE			LOOP    DELAY_LOOP       ; Jump repeatedly to D
+				ELAY_LOOP until CX = 0
+				
+				
+ 0021  43			INC     BX               ; Incrementing the val
+				ue of BX lowers 
+				                         ; the frequency each t
+				ime we repeat the
+				                         ; whole routine
+				
+ 0022  4A			DEC     DX               ; Decrement repeat rou
+				tine count
+				
+ 0023  83 FA 00			CMP     DX, 0            ; Is DX (repeat count)
+				 = to 0
+ 0026  75 E6			JNZ     NEXT_FREQUENCY   ; If not jump to NEXT_
+				FREQUENCY
+				                         ; and do whole routine
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:26
+                                                             Page     1-4
+
+
+				 again.
+				
+				                         ; Else DX = 0 time to 
+				turn speaker OFF
+				
+ 0028  E4 61			IN      AL,61H           ; Get current value of
+				 port 61H.
+ 002A  24 FC			AND     AL,11111100B     ; AND AL to this value
+				, forcing first two bits low.
+ 002C  E6 61			OUT     61H,AL           ; Copy it to port 61H 
+				of the PPI Chip
+				                         ; to
+ 002E  5A			pop dx
+ 002F  59			pop cx
+ 0030  5B			pop bx
+ 0031  58			pop ax
+ 0032  CB			ret
+ 0033				rightsound endp
+				;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;credit
+				ed to:dina alaa;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				;;;;;;;;;;;;;
+ 0033				wrongsound proc far 
+ 0033  B0 B6			mov     al, 182         ; Prepare the speaker f
+				or the
+ 0035  E6 43			        out     43h, al         ;  note.
+ 0037  B8 11D0			        mov     ax, 4560        ; Frequency num
+				ber (in decimal)
+				                                ;  for middle C
+				.
+ 003A  E6 42			        out     42h, al         ; Output low by
+				te.
+ 003C  8A C4			        mov     al, ah          ; Output high b
+				yte.
+ 003E  E6 42			        out     42h, al 
+ 0040  E4 61			        in      al, 61h         ; Turn on note 
+				(get value from
+				                                ;  port 61h).
+ 0042  0C 03			        or      al, 00000011b   ; Set bits 1 an
+				d 0.
+ 0044  E6 61			        out     61h, al         ; Send new valu
+				e.
+ 0046  BB 0019			        mov     bx, 25          ; Pause for dur
+				ation of note.
+ 0049				.pause1:
+ 0049  B9 FFFF			        mov     cx, 65535
+ 004C				.pause2:
+ 004C  49			        dec     cx
+ 004D  75 FD			        jne     .pause2
+ 004F  4B			        dec     bx
+ 0050  75 F7			        jne     .pause1
+ 0052  E4 61			        in      al, 61h         ; Turn off note
+				 (get value from
+				                                ;  port 61h).
+ 0054  24 FC			        and     al, 11111100b   ; Reset bits 1 
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:26
+                                                             Page     1-5
+
+
+				and 0.
+ 0056  E6 61			        out     61h, al
+ 0058  CB			ret
+ 0059				wrongsound endp 
+				;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				DISPLAYSTRING MACRO OUTMSG
+						push ax
+						push dx
+				                MOV AH,09H
+				                MOV DX,OFFSET OUTMSG
+				                INT 21H
+						pop dx 
+						pop ax
+				ENDM DISPLAYSTRING 
+				;;;;;;;randomize the first number in array then
+				 get the other elements from it;;;;;;;;;;;;;;;;
+				;
+ 0059				randomize proc
+ 0059  50			   push ax
+ 005A  53			   push bx
+ 005B  51			   push cx
+ 005C  52			   push dx
+ 005D  EB 20 90			   jmp beg
+ 0060				adjust:
+ 0060  B8 0005			   mov ax,5
+ 0063  39 06 001B R		   cmp rand,ax
+ 0067  74 0B			   jz minus
+ 0069  FF 06 001B R		   inc rand
+ 006D  8B 16 001B R		   mov dx,rand
+ 0071  EB 29 90			   jmp complete
+ 0074				 minus:
+ 0074  FF 0E 001B R		   dec rand
+ 0078  8B 16 001B R		   mov dx,rand
+ 007C  EB 1E 90			   jmp complete
+ 007F				   beg:
+ 007F  BB 0000			   mov bx,0
+				   
+ 0082  B4 2C			   MOV AH, 2ch  ; interrupts to get system time
+				        
+ 0084  CD 21			   INT 21H         
+				  
+ 0086  8B C2			   mov  ax, dx
+ 0088  33 D2			   xor dx,dx
+ 008A  B9 0004			   mov  cx,4 
+ 008D  F7 F1			   div  cx       ; here dx contains the remaind
+				er of the division - from 0 to 3
+ 008F  83 C2 02			   add dx,2      ;get it in range[2..5]
+ 0092  39 16 001B R		   cmp rand,dx   ;;make sure no two consecutive
+				 randoms are equal
+ 0096  74 C8			   jz adjust
+ 0098  89 16 001B R		   mov rand,dx
+ 009C				complete:
+ 009C  89 97 0000 R		   mov numarr[bx],dx  ;0 pos in array
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:26
+                                                             Page     1-6
+
+
+				   
+ 00A0  83 C3 02			   add bx,2           ;1 pos in array
+ 00A3  83 EA 02			   sub dx,2
+ 00A6  89 97 0000 R		   mov numarr[bx],dx  
+ 00AA  83 C3 02			   add bx,2           ;2
+ 00AD  8B 16 001B R		   mov dx,rand  
+ 00B1  83 EA 01			   sub dx,1
+ 00B4  89 97 0000 R		   mov numarr[bx],dx
+ 00B8  83 C3 02			   add bx,2           ;3
+ 00BB  8B 16 001B R		   mov dx,rand  
+ 00BF  83 C2 01			   add dx,1
+ 00C2  89 97 0000 R		   mov numarr[bx],dx
+ 00C6  83 C3 02			   add bx,2           ;4
+ 00C9  8B 16 001B R		   mov dx,rand  
+ 00CD  83 C2 03			   add dx,3
+ 00D0  89 97 0000 R		   mov numarr[bx],dx
+ 00D4  83 C3 02			   add bx,2           ;5
+ 00D7  8B 16 001B R		   mov dx,rand  
+ 00DB  83 C2 04			   add dx,4
+ 00DE  89 97 0000 R		   mov numarr[bx],dx
+				 
+ 00E2  5A			   pop dx
+ 00E3  59			   pop cx
+ 00E4  5B			   pop bx
+ 00E5  58			   pop ax
+ 00E6  CB			ret
+ 00E7				randomize endp
+				;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;check the n
+				umber accumulated from user in numtaken var;;;;
+				;;;
+ 00E7				checkres proc
+ 00E7  50			   push ax
+ 00E8  53			   push bx
+ 00E9  51			   push cx
+ 00EA  52			   push dx
+ 00EB  B8 0000				mov ax,0
+ 00EE  A3 00AB R			mov numchk,ax                  ;;intial
+				ise numchk
+ 00F1  8B 1E 00AD R			mov bx,numpointer
+ 00F5  83 FB 00				cmp bx,0
+ 00F8  74 33				jz wrong	               ;;if no 
+				number was taken then we have no answer(wrong p
+				oint)
+ 00FA  B9 0001				mov cx,1                       ;;multip
+				lied by least significant number
+ 00FD					readtochk:
+ 00FD  83 EB 02					sub bx,2
+ 0100  8B 87 00A3 R				mov ax,numtaken[bx]    ;;get di
+				git
+ 0104  F7 E1					mul cx		       ;;mul by
+				(1=>unit 10=>tens..)
+ 0106  01 06 00AB R				add numchk,ax
+ 010A  8B C1					mov ax,cx
+ 010C  B9 000A					mov cx,10
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:26
+                                                             Page     1-7
+
+
+ 010F  F7 E1					mul cx		       ;;cx=cx*
+				10
+ 0111  8B C8					mov cx,ax
+ 0113  83 FB 00					cmp bx,0
+ 0116  75 E5					jnz readtochk
+ 0118				chkres:
+ 0118  A1 00A1 R			mov ax,res			;;compa
+				re with expected result
+ 011B  3B 06 00AB R			cmp ax,numchk
+ 011F  75 0C				jnz wrong
+				
+ 0121  FE 06 0094 R			inc rightans
+ 0125  9A 0000 ---- R			call rightsound
+ 012A  EB 0D 90				jmp exitcheck
+ 012D				wrong:
+ 012D  FE 06 0095 R			inc wrongans
+ 0131  9A 0033 ---- R			call wrongsound
+ 0136  EB 01 90				jmp exitcheck
+ 0139				exitcheck:	
+ 0139  5A			   pop dx
+ 013A  59			   pop cx
+ 013B  5B			   pop bx
+ 013C  58			   pop ax
+ 013D  CB			ret
+ 013E				checkres endp
+				;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				;;;;;;;;;;;;;;update score and enable adding ne
+				w question;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 013E				updatebar proc
+ 013E  50			      push ax
+ 013F  53			      push bx
+ 0140  51			      push cx
+ 0141  52			      push dx
+				;;;;;clear bar;;;;;;;;;;;;;;;
+ 0142  B9 0000			        mov cx,0
+ 0145  BA 0000				mov dx,0
+ 0148  B0 00				mov al,00h
+ 014A  B4 0C				mov ah,0ch
+ 014C					bary:
+ 014C					      barx: 
+ 014C  CD 10				      int 10h
+ 014E  41			   	      inc cx
+ 014F  81 F9 0280			      cmp cx,640
+ 0153  75 F7				      jnz barx
+ 0155  B9 0000				mov cx,0
+ 0158  42				inc dx
+ 0159  83 FA 19				cmp dx,25
+ 015C  75 EE				jnz bary
+				;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;string of right
+ 015E  B4 02				mov ah,2
+ 0160  BB 0000				MOV Bx,0
+ 0163  B2 00			        MOV DL,0
+ 0165  B6 00				MOV DH,0
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:26
+                                                             Page     1-8
+
+
+ 0167  CD 10			        INT 10H
+					displaystring correct
+ 0169  50                    1			push ax 
+ 016A  52                    1			push dx 
+ 016B  B4 09                 1	                MOV AH,09H 
+ 016D  BA 001E R             1	                MOV DX,OFFSET correct 
+ 0170  CD 21                 1	                INT 21H 
+ 0172  5A                    1			pop dx 
+ 0173  58                    1			pop ax 
+				;;;;;;;;;;;;;;;;;;;;;;;;;updated score
+ 0174  B4 09				MOV AH,9
+ 0176  B7 00				MOV BH,00H
+ 0178  B3 0F				MOV BL,0fH
+ 017A  A0 0094 R			mov al,rightans
+ 017D  04 30				add al,'0'
+ 017F  B9 0001				MOV CX,1
+ 0182  CD 10				INT 10H
+				;;;;;;;;;;;;;;;;;;;;;;;;;;;;;string of wrong
+ 0184  B4 02				mov ah,2
+ 0186  BB 0000				MOV Bx,0
+ 0189  B2 3C			        MOV DL,60
+ 018B  B6 00				MOV DH,0
+ 018D  CD 10				INT 10H
+					displaystring notcorrect
+ 018F  50                    1			push ax 
+ 0190  52                    1			push dx 
+ 0191  B4 09                 1	                MOV AH,09H 
+ 0193  BA 002E R             1	                MOV DX,OFFSET notcorrect 
+ 0196  CD 21                 1	                INT 21H 
+ 0198  5A                    1			pop dx 
+ 0199  58                    1			pop ax 
+				;;;;;;;;;;;;;;;;;;;;;;;;;updated score
+ 019A  B4 09				MOV AH,9
+ 019C  A0 0095 R			mov al,wrongans
+ 019F  04 30				add al,'0'
+ 01A1  B7 00				MOV BH,00H
+ 01A3  B3 0F				MOV BL,0fH
+ 01A5  B9 0001				MOV CX,1
+ 01A8  CD 10				INT 10H
+ 01AA  C7 06 00AD R 0000		mov numpointer,0
+ 01B0  A0 00AF R			mov al,qflag
+ 01B3  3C 00				cmp al,0
+ 01B5  74 04				jz endbar
+ 01B7  FE 0E 00AF R			dec qflag
+ 01BB				endbar:
+					
+ 01BB  5A			   pop dx
+ 01BC  59			   pop cx
+ 01BD  5B			   pop bx
+ 01BE  58			   pop ax
+ 01BF  CB			ret
+ 01C0				updatebar endp
+				;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				;;;;;;;;;;;;;;;;;;;
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:26
+                                                             Page     1-9
+
+
+				;;;check pressed key enter/right or left arrow 
+				escape;;;;;;;;;;;;;
+ 01C0				checkpress proc
+ 01C0  3C 1B				cmp al,1bh
+ 01C2  74 41				jz endg
+ 01C4  3C 0D				cmp al,13
+ 01C6  74 0D				jz checkanswer
+ 01C8  80 FC 4B				cmp ah,75
+ 01CB  74 15				jz toleft
+ 01CD  80 FC 4D				cmp ah,77
+ 01D0  74 1F				jz toright
+ 01D2  EB 37 90				jmp endcheck
+ 01D5				checkanswer:            ;;enter is pressed or m
+				ore than four digits 
+					;;reset
+ 01D5  9A 00E7 ---- R			call checkres
+ 01DA  9A 013E ---- R			call updatebar  ;;to update score
+ 01DF  EB 2A 90				jmp endcheck
+ 01E2				toleft:	
+ 01E2  83 3E 0097 R 19			cmp playerx,25 ;;not out of screen
+ 01E7  7E 22				jle endcheck
+ 01E9  83 2E 0097 R 0F			sub playerx,15  ;;move player
+ 01EE  EB 1B 90				jmp endcheck
+ 01F1				toright:
+ 01F1  81 3E 0097 R 0267		cmp playerx,615  ;;not out of screen
+ 01F7  74 12				jz endcheck
+ 01F9  FE 06 001D R			inc right
+ 01FD  83 06 0097 R 0F			add playerx,15  ;;move player 
+ 0202  EB 07 90				jmp endcheck
+ 0205				endg:
+ 0205  B4 01				mov ah,1       ;;Esc 
+ 0207  88 26 0096 R			mov endflag,ah ;;set end flag
+ 020B				endcheck:
+ 020B  B4 00				mov ah,0
+ 020D  CD 16				int 16h
+ 020F  CB			ret
+ 0210				checkpress endp  
+				;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				;;;;;;;;;;;;;;;;;;;inc number step and redraw s
+				cene;;;;;;;;;;;;;;;;;
+ 0210				numbers proc
+ 0210  52				push dx
+ 0211  51				push cx
+ 0212  53				push bx
+ 0213  50				push ax
+ 0214  83 06 0018 R 0A		        add numaty,10
+ 0219  BB 0000				mov bx,0
+ 021C  FE 06 001A R			inc counter 
+ 0220  EB 4E 90				jmp rain
+ 0223				zero:
+ 0223  9A 0000 ---- E			call no0
+ 0228  EB 46 90				jmp rain
+ 022B				one:
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:26
+                                                             Page     1-10
+
+
+ 022B  9A 0000 ---- E			call no1
+ 0230  EB 3E 90				jmp rain
+ 0233				two:
+ 0233  9A 0000 ---- E			call no2
+ 0238  EB 36 90				jmp rain
+ 023B				three:
+ 023B  9A 0000 ---- E			call no3
+ 0240  EB 2E 90				jmp rain
+ 0243				four:
+ 0243  9A 0000 ---- E			call no4
+ 0248  EB 26 90				jmp rain
+ 024B				five:
+ 024B  9A 0000 ---- E			call no5
+ 0250  EB 1E 90				jmp rain
+ 0253				six:
+ 0253  9A 0000 ---- E			call no6
+ 0258  EB 16 90				jmp rain
+ 025B				seven:
+ 025B  9A 0000 ---- E			call no7
+ 0260  EB 0E 90				jmp rain
+ 0263				eight:
+ 0263  9A 0000 ---- E			call no8
+ 0268  EB 06 90				jmp rain
+ 026B				nine:
+ 026B  9A 0000 ---- E			call no9
+ 0270					rain:
+ 0270  83 FB 0C				     cmp bx,12
+ 0273  74 43				     JZ endrain
+ 0275  8B 8F 000C R			     mov cx,numatx[bx]	     
+ 0279  8B 16 0018 R			     mov dx,numaty
+					   
+ 027D  8B 87 0000 R			     mov ax ,numarr[bx]
+ 0281  83 C3 02				     add bx,2
+ 0284  3D 0000				     cmp ax,0
+ 0287  74 9A				     jz zero
+ 0289  3D 0001				     cmp ax,1
+ 028C  74 9D				     jz ONE
+ 028E  3D 0002				     cmp ax,2
+ 0291  74 A0				     jz two
+ 0293  3D 0003				     cmp ax,3
+ 0296  74 A3				     jz three
+ 0298  3D 0004				     cmp ax,4
+ 029B  74 A6				     jz four
+ 029D  3D 0005				     cmp ax,5
+ 02A0  74 A9				     jz five
+ 02A2  3D 0006				     cmp ax,6
+ 02A5  74 AC				     jz six
+ 02A7  3D 0007				     cmp ax,7
+ 02AA  74 AF				     jz seven
+ 02AC  3D 0008				     cmp ax,8
+ 02AF  74 B2				     jz eight
+ 02B1  3D 0009				     cmp ax,9
+ 02B4  74 B5				     jz nine
+ 02B6  EB B8				     jmp rain
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:26
+                                                             Page     1-11
+
+
+ 02B8				        endrain:
+ 02B8  58				pop ax
+ 02B9  5B				pop bx	
+ 02BA  59				pop cx
+ 02BB  5A				pop dx
+ 02BC  CB			ret
+ 02BD				numbers endp
+				;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				;;;;;;;;;;;;;;;; clearing the step of the numbe
+				r array;;;;;;;;;;;;;;;;;;;;;;
+ 02BD				clearnumbers proc
+ 02BD  52				push dx
+ 02BE  51				push cx
+ 02BF  53				push bx
+ 02C0  50				push ax
+				;;;;;;;;;;;;;;;numbers clear;;;;;;;;;;;;;;;;;;;
+				;;
+ 02C1  8B 1E 0018 R			mov bx,numaty
+ 02C5  83 EB 35				sub bx,53
+ 02C8  B9 0000				mov cx,0
+ 02CB  8B D3				mov dx,bx
+ 02CD  83 C3 0A				add bx,10
+ 02D0  B0 0F				mov al,0fh
+ 02D2  B4 0C				mov ah,0ch
+ 02D4					clry:
+ 02D4					      clrx: 
+ 02D4  CD 10				      int 10h
+ 02D6  41			   	      inc cx
+ 02D7  81 F9 0280			      cmp cx,640
+ 02DB  75 F7				      jnz clrx
+ 02DD  B9 0000				mov cx,0
+ 02E0  42				inc dx
+ 02E1  3B D3				cmp dx,bx
+ 02E3  75 EF				jnz clry
+				;;;;;;;;;;;;;;;;player moved to right then clea
+				r;;;;;;;;;;;;;;;;;;;
+ 02E5  80 3E 001D R 00			cmp right,0
+ 02EA  74 2A				jz endclr
+ 02EC  FE 0E 001D R			dec right
+ 02F0  8B 1E 0097 R			mov bx,playerx
+ 02F4  83 EB 23				sub bx,35
+ 02F7  8B CB				mov cx,bx
+ 02F9  BA 01B1				mov dx,433
+ 02FC  B0 0F				mov al,0fh
+ 02FE  B4 0C				mov ah,0ch
+ 0300					pekay:
+ 0300  83 C3 0A				      add bx,10
+ 0303					      pekax: 
+ 0303  CD 10				      int 10h
+ 0305  41			   	      inc cx
+ 0306  3B CB				      cmp cx,bx
+ 0308  75 F9				      jnz pekax
+ 030A  83 EB 0A				sub bx,10
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:26
+                                                             Page     1-12
+
+
+ 030D  8B CB				mov cx,bx
+ 030F  42				inc dx
+ 0310  81 FA 01D2			cmp dx,466
+ 0314  75 EA				jnz pekay
+				;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				;;;;;;;;;;;;;;;;;;;;
+ 0316				endclr:	
+ 0316  58				pop ax
+ 0317  5B				pop bx	
+ 0318  59				pop cx
+ 0319  5A				pop dx
+					
+ 031A  CB			ret 
+ 031B				clearnumbers endp
+				;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 031B				updatescreen proc
+ 031B  50				push ax
+ 031C  53				push bx
+ 031D  51				push cx
+ 031E  52				push dx
+					
+ 031F  8A 2E 001A R			mov ch,counter
+ 0323  80 FD 32				cmp ch,50
+ 0326  74 1A				jz reset
+ 0328				strtupdate:
+ 0328  9A 02BD ---- R			call clearnumbers
+ 032D  9A 0210 ---- R			call numbers	
+ 0332  8B 0E 0097 R			mov cx,playerx
+ 0336  8B 16 0099 R			mov dx,playery
+ 033A  9A 0000 ---- E			call player  ;;redraw player in new pos
+				ition
+					
+ 033F  EB 13 90				jmp endupdate
+ 0342				reset:
+ 0342  C6 06 001A R 00			mov counter,0   ;;get numbers to begini
+				ng
+ 0347  C7 06 0018 R 004B		mov numaty,75	   
+ 034D  9A 0059 ---- R			call randomize  ;;regenerate number arr
+				ay
+ 0352  EB D4				jmp strtupdate
+ 0354				endupdate:
+				
+ 0354  5A				pop dx
+ 0355  59				pop cx
+ 0356  5B				pop bx
+ 0357  58				pop ax
+ 0358  CB			ret
+ 0359				updatescreen endp
+				;;;;;;;;;;;;;;;;;given a position print digit;;
+				;;;;;;;;;;;;;;;;;;;;;;
+				printatpos Macro x1,y1
+				        PUSH AX 
+				        PUSH BX
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:26
+                                                             Page     1-13
+
+
+				        PUSH CX
+				        PUSH DX 
+				
+					mov ah,2
+					MOV Bx,0
+				        MOV DL,x1
+					MOV DH,y1
+				        INT 10H
+					MOV AH,9
+					MOV BH,00H
+					MOV BL,0fH
+					MOV CX,1
+					INT 10H
+				
+					POP DX
+				        POP CX
+				        POP BX
+				        POP AX
+				 
+				endm printatpos
+				;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				;;;;;;;;;;;;;;;;;;;;
+				;;;;;;;;;;taken from geeks for geeks page and u
+				pdated for the game use;;;;;
+ 0359				PRINT PROC 
+ 0359  50			    PUSH AX 
+ 035A  53			    PUSH BX
+ 035B  51			    PUSH CX
+ 035C  52			    PUSH DX          
+				 
+ 035D  B9 0000			    mov cx,0                       ;INITIALISE 
+				COUNT
+ 0360  BA 0000			    mov dx,0 
+ 0363  3D 0000				cmp ax,0
+ 0366  75 02				jnz label1
+ 0368  41				inc cx 
+ 0369  50				push ax
+ 036A				    label1:  
+ 036A  3D 0000			        cmp ax,0                   ;MEANS THAT 
+				NO VALUE IS REMAINING TO PRINT 
+ 036D  74 0B			        je print1       
+				         
+ 036F  BB 000A			        mov bx,10         
+ 0372  F7 F3			        div bx                    ;DIVIDE BY 10
+				 TO GET THE LEAST SIGNIFICANT DIGIT            
+				  
+				          
+ 0374  52			        push dx                   ;push it in t
+				he stack           
+ 0375  41			        inc cx                    ;INC TO KNOW 
+				HOW MANY TIMES TO POP THE STACK         
+				          
+ 0376  33 D2			        xor dx,dx                 ;set dx to 0 
+ 0378  EB F0			        jmp label1 
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:26
+                                                             Page     1-14
+
+
+ 037A				    print1: 
+ 037A  83 F9 00			        cmp cx,0                  ;CHECK COUNT
+ 037D  74 2F			        je exit
+				          
+ 037F  5A			        pop dx       
+				
+ 0380  83 C2 30			        add dx,'0'                ;CONVERT TO A
+				SCII REPRESENTING THE DIGIT
+ 0383  8A C2				mov al,dl
+					printatpos printx,printy
+ 0385  50                    1	        PUSH AX 
+ 0386  53                    1	        PUSH BX 
+ 0387  51                    1	        PUSH CX 
+ 0388  52                    1	        PUSH DX 
+ 0389  B4 02                 1		mov ah,2 
+ 038B  BB 0000               1		MOV Bx,0 
+ 038E  8A 16 00B0 R          1	        MOV DL,printx 
+ 0392  8A 36 00B1 R          1		MOV DH,printy 
+ 0396  CD 10                 1	        INT 10H 
+ 0398  B4 09                 1		MOV AH,9 
+ 039A  B7 00                 1		MOV BH,00H 
+ 039C  B3 0F                 1		MOV BL,0fH 
+ 039E  B9 0001               1		MOV CX,1 
+ 03A1  CD 10                 1		INT 10H 
+ 03A3  5A                    1		POP DX 
+ 03A4  59                    1	        POP CX 
+ 03A5  5B                    1	        POP BX 
+ 03A6  58                    1	        POP AX 
+ 03A7  FE 06 00B0 R		        inc printx      
+ 03AB  49			        dec cx     ;DEC COUNT
+ 03AC  EB CC			        jmp print1 
+ 03AE				exit: 
+ 03AE  5A			  POP DX
+ 03AF  59			  POP CX
+ 03B0  5B			  POP BX
+ 03B1  58			  POP AX
+ 03B2  CB			  RET 
+ 03B3				print endP
+				;;;;;;;;;;;;;;;;;;;;;;;;print the question afte
+				r we form it;;;;;;;;;;;;;;;;;    
+ 03B3				printques proc
+ 03B3  50			    PUSH AX 
+ 03B4  53			    PUSH BX
+ 03B5  51			    PUSH CX
+ 03B6  52			    PUSH DX  
+ 03B7  B0 23				mov al,35
+ 03B9  A2 00B0 R			mov printx,al
+ 03BC  B8 0000				mov ax,0
+ 03BF  A1 009B R			mov ax,op1
+ 03C2  9A 0359 ---- R			call print 
+ 03C7  A0 009F R			mov al,op
+					printatpos printx,printy
+ 03CA  50                    1	        PUSH AX 
+ 03CB  53                    1	        PUSH BX 
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:26
+                                                             Page     1-15
+
+
+ 03CC  51                    1	        PUSH CX 
+ 03CD  52                    1	        PUSH DX 
+ 03CE  B4 02                 1		mov ah,2 
+ 03D0  BB 0000               1		MOV Bx,0 
+ 03D3  8A 16 00B0 R          1	        MOV DL,printx 
+ 03D7  8A 36 00B1 R          1		MOV DH,printy 
+ 03DB  CD 10                 1	        INT 10H 
+ 03DD  B4 09                 1		MOV AH,9 
+ 03DF  B7 00                 1		MOV BH,00H 
+ 03E1  B3 0F                 1		MOV BL,0fH 
+ 03E3  B9 0001               1		MOV CX,1 
+ 03E6  CD 10                 1		INT 10H 
+ 03E8  5A                    1		POP DX 
+ 03E9  59                    1	        POP CX 
+ 03EA  5B                    1	        POP BX 
+ 03EB  58                    1	        POP AX 
+ 03EC  FE 06 00B0 R			inc printx
+ 03F0  A1 009D R			mov ax,op2
+ 03F3  9A 0359 ---- R			call print 
+ 03F8  B0 3D				mov al,'='
+					printatpos printx,printy
+ 03FA  50                    1	        PUSH AX 
+ 03FB  53                    1	        PUSH BX 
+ 03FC  51                    1	        PUSH CX 
+ 03FD  52                    1	        PUSH DX 
+ 03FE  B4 02                 1		mov ah,2 
+ 0400  BB 0000               1		MOV Bx,0 
+ 0403  8A 16 00B0 R          1	        MOV DL,printx 
+ 0407  8A 36 00B1 R          1		MOV DH,printy 
+ 040B  CD 10                 1	        INT 10H 
+ 040D  B4 09                 1		MOV AH,9 
+ 040F  B7 00                 1		MOV BH,00H 
+ 0411  B3 0F                 1		MOV BL,0fH 
+ 0413  B9 0001               1		MOV CX,1 
+ 0416  CD 10                 1		INT 10H 
+ 0418  5A                    1		POP DX 
+ 0419  59                    1	        POP CX 
+ 041A  5B                    1	        POP BX 
+ 041B  58                    1	        POP AX 
+ 041C  FE 06 00B0 R			inc printx
+					
+ 0420  5A			    POP DX
+ 0421  59			    POP CX
+ 0422  5B			    POP BX
+ 0423  58			    POP AX
+ 0424  CB			ret
+ 0425				printques endp
+				;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 0425				question proc
+ 0425  50			    PUSH AX 
+ 0426  53			    PUSH BX
+ 0427  51			    PUSH CX
+ 0428  52			    PUSH DX 
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:26
+                                                             Page     1-16
+
+
+ 0429  BB 0064				mov bx,100
+ 042C  A0 00AF R			mov al,qflag
+ 042F  3C 00				cmp al,0
+ 0431  75 5A				jnz temp ;;temporary jump
+				   
+ 0433  B4 2C			        MOV AH, 2ch  ; interrupt to get system 
+				time        
+ 0435  CD 21			        INT 21H  
+				  
+ 0437  8B C2			        mov  ax, dx
+ 0439  33 D2			        xor dx,dx
+				
+ 043B  F7 F3			        div  bx   
+ 043D  89 16 009B R			mov op1,dx   ;randomize first operand
+					
+ 0441  B4 2C				MOV AH, 2ch  ; interrupt to get system 
+				time        
+ 0443  CD 21			        INT 21H     
+				  
+ 0445  8B C2			        mov  ax, dx
+ 0447  33 D2			        xor dx,dx
+				
+ 0449  83 EB 31				sub bx,49    ;randomize but in smaller 
+				range
+ 044C  F7 F3			        div  bx   
+ 044E  89 16 009D R			mov op2,dx
+					
+ 0452  B4 2C				MOV AH, 2ch  ; interrupt to get system 
+				time        
+ 0454  CD 21			        INT 21H     
+ 0456  8B C2			        mov  ax, dx
+ 0458  33 D2			        xor dx,dx
+ 045A  83 EB 27			        sub  bx,39   ;randomize a factor to add
+				 to second operand
+ 045D  F7 F3			        div  bx   
+ 045F  01 16 009D R			add op2,dx
+ 0463  A1 009B R			mov ax,op1
+ 0466  8B 1E 009D R			mov bx,op2
+ 046A  3B C3				cmp ax,bx
+ 046C  7F 0E				jg positiveans
+ 046E  8B 1E 009B R			mov bx,op1   ;;swapped so we have no ne
+				gative answer
+ 0472  A1 009D R			mov ax,op2
+ 0475  A3 009B R			mov op1,ax
+ 0478  89 1E 009D R			mov op2,bx
+ 047C				positiveans:
+ 047C  8A 2E 00A0 R			mov ch,operation
+ 0480  80 FD 00				cmp ch,0
+ 0483  74 0B				jz addition
+ 0485  80 FD 01				cmp ch,1
+ 0488  74 17				jz subtraction
+ 048A  EB 26 90				jmp multiply
+ 048D				temp:
+ 048D  EB 3E 90			    jmp haveone
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:26
+                                                             Page     1-17
+
+
+ 0490				addition:
+ 0490  C6 06 009F R 2B		        mov op,'+'
+ 0495  FE 06 00A0 R			inc operation
+ 0499  03 C3				add ax,bx
+ 049B  A3 00A1 R			mov res,ax
+ 049E  EB 24 90				jmp goprint
+ 04A1				subtraction:
+ 04A1  C6 06 009F R 2D		        mov op,'-'
+ 04A6  FE 06 00A0 R			inc operation
+ 04AA  2B C3				sub ax,bx
+ 04AC  A3 00A1 R			mov res,ax
+ 04AF  EB 13 90				jmp goprint
+ 04B2				multiply:
+ 04B2  C6 06 009F R 2A		        mov op,'*'
+ 04B7  F7 E3				mul bx
+ 04B9  A3 00A1 R			mov res,ax
+ 04BC  80 2E 00A0 R 02			sub operation,2
+ 04C1  EB 01 90				jmp goprint
+				
+ 04C4				goprint:
+ 04C4  FE 06 00AF R			inc qflag        ;;set i have a questio
+				n flag
+ 04C8  9A 03B3 ---- R			call printques     
+ 04CD				haveone:
+ 04CD  5A			   POP DX
+ 04CE  59			   POP CX
+ 04CF  5B			   POP BX
+ 04D0  58			   POP AX
+ 04D1  CB			ret
+ 04D2				question endp
+				;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 04D2				detectcollide proc
+ 04D2  50				 PUSH AX 
+ 04D3  53			         PUSH BX
+ 04D4  51			         PUSH CX
+ 04D5  52			         PUSH DX 
+ 04D6  A1 0018 R			mov ax,numaty   
+ 04D9  3D 0176				cmp ax,374      ;;check y range =>above
+ 04DC  7C 6F				jl endcollision
+ 04DE  3D 01ED				cmp ax,493      ;;check y range =>under
+ 04E1  7F 6A				jg endcollision
+				
+ 04E3  A1 0097 R			mov ax,playerx
+ 04E6  BB 0000				mov bx,0
+ 04E9					checkcollide:   ;;check if in range of 
+				any of the six numbers
+ 04E9  8B 8F 000C R			     mov cx,numatx[bx]
+ 04ED  89 0E 00B2 R			     mov xmin,cx
+ 04F1  83 2E 00B2 R 19			     sub xmin,25
+ 04F6  89 0E 00B4 R			     mov xmax,cx
+ 04FA  83 06 00B4 R 19			     add xmax,25
+ 04FF  3B 06 00B2 R			     cmp ax,xmin
+ 0503  7C 33				     jl notin
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:26
+                                                             Page     1-18
+
+
+ 0505  39 06 00B4 R			     cmp xmax,ax
+ 0509  7C 2D				     jl notin
+ 050B  8B 87 0000 R			     mov ax,numarr[bx]
+ 050F  3D 000A				     cmp ax,10
+ 0512  74 39				     jz endcollision
+ 0514  9A 0359 ---- R			     call print
+ 0519  C7 87 0000 R 000A		     mov numarr[bx],10	
+ 051F  8B 1E 00AD R			     mov bx,numpointer
+ 0523  83 06 00AD R 02			     add numpointer,2
+ 0528  89 87 00A3 R			     mov numtaken[bx],ax
+ 052C  8B 1E 00AD R			     mov bx,numpointer
+ 0530  83 FB 08				     cmp bx,8         ;;the user took f
+				our digits
+ 0533  74 0E				     jz maxno
+ 0535  EB 16 90				     jmp endcollision     
+ 0538				notin:
+ 0538  83 C3 02				     add bx,2
+ 053B  83 FB 0C				     cmp bx,12
+ 053E  75 A9				    jnz checkcollide
+ 0540  EB 0B 90				    jmp endcollision
+ 0543				maxno:	
+ 0543  9A 00E7 ---- R			call checkres
+ 0548  9A 013E ---- R			call updatebar 
+ 054D				endcollision:	
+ 054D  5A				 POP DX
+ 054E  59			         POP CX
+ 054F  5B			         POP BX
+ 0550  58			         POP AX
+ 0551  CB			ret 
+ 0552				detectcollide endp
+				;;;;;;;;;;;;;;;;;;;;;;;;;;;;;delay sec;;;;;;;;;
+				;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 0552				SLEEPSEC PROC
+ 0552  51			    push cx
+ 0553  B4 2C			    MOV AH,2CH
+ 0555  CD 21			    INT 21H
+ 0557  8A C6			    MOV AL,DH ;;;;;TAKE THE SECOND IN WHICH I E
+				NTER THE PROC
+ 0559				    WAITSEC:
+ 0559  CD 21				INT 21H
+ 055B  3A F0				CMP DH,AL
+ 055D  74 FA			   JZ WAITSEC ;;;;;WAIT TILL SECOND IS INCREMEN
+				TED THEN RETURN
+ 055F  59			   POP CX
+ 0560  CB			   RET
+ 0561				SLEEPSEC ENDP
+				;;;;;;;;;;;;;;;;;;;;;;;;;;the player won/lost;;
+				;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 0561				lastscreen proc
+ 0561  50				 PUSH AX 
+ 0562  53			         PUSH BX
+ 0563  51			         PUSH CX
+ 0564  52			         PUSH DX 
+ 0565  8A 26 0094 R			mov ah,rightans
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:26
+                                                             Page     1-19
+
+
+ 0569  A0 0095 R			mov al,wrongans
+ 056C  80 FC 09			        cmp ah,9
+ 056F  74 04				jz endgame
+ 0571  3C 03			        cmp al,3
+ 0573  75 70				jnz notend
+ 0575				endgame:
+ 0575  C6 06 0096 R 01			mov endflag,1
+					;;;;;change the video mode to lower res
+				olution
+ 057A  B4 00				mov ah,0
+ 057C  B0 13				mov al,13h
+ 057E  CD 10				int 10h
+					;;;;;clear the screen with black
+ 0580  B8 0600				mov ax,0600h
+ 0583  B7 0F				mov bh,0fh
+ 0585  B9 0000				mov cx,0
+ 0588  BA 184F				mov dx,184fh
+ 058B  CD 10				int 10h
+					;;;;;draw a logo
+ 058D  B9 0078				mov cx,120
+ 0590  BA 0032				mov dx,50
+ 0593  9A 0000 ---- E			call no1
+ 0598  B9 00B4				mov cx,180
+ 059B  BA 003C				mov dx,60
+ 059E  9A 0000 ---- E			call no2
+ 05A3  B9 00F0				mov cx,240
+ 05A6  BA 003C				mov dx,60
+ 05A9  9A 0000 ---- E			call no3
+					;;;;;write you win or you lose
+ 05AE  B4 02				mov ah,2
+ 05B0  BB 0000				MOV Bx,0
+ 05B3  B2 0A			        MOV DL,10
+ 05B5  B6 10				MOV DH,16
+ 05B7  CD 10			        INT 10H
+ 05B9  8A 26 0094 R			mov ah,rightans
+ 05BD  80 FC 09				cmp ah,9
+ 05C0  74 0E				jz str1
+					displaystring lost
+ 05C2  50                    1			push ax 
+ 05C3  52                    1			push dx 
+ 05C4  B4 09                 1	                MOV AH,09H 
+ 05C6  BA 003F R             1	                MOV DX,OFFSET lost 
+ 05C9  CD 21                 1	                INT 21H 
+ 05CB  5A                    1			pop dx 
+ 05CC  58                    1			pop ax 
+ 05CD  EB 0C 90				jmp thepause
+ 05D0				str1:
+					displaystring won
+ 05D0  50                    1			push ax 
+ 05D1  52                    1			push dx 
+ 05D2  B4 09                 1	                MOV AH,09H 
+ 05D4  BA 0055 R             1	                MOV DX,OFFSET won 
+ 05D7  CD 21                 1	                INT 21H 
+ 05D9  5A                    1			pop dx 
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:26
+                                                             Page     1-20
+
+
+ 05DA  58                    1			pop ax 
+					;;;;;wait for five seconds
+ 05DB				thepause:
+ 05DB  B9 0005				mov cx,5
+ 05DE					hold:
+ 05DE  9A 0552 ---- R			    call sleepsec
+ 05E3  E2 F9				loop hold
+ 05E5				notend:
+ 05E5  5A				 POP DX
+ 05E6  59			         POP CX
+ 05E7  5B			         POP BX
+ 05E8  58			         POP AX
+ 05E9  CB			ret
+ 05EA				lastscreen endp
+				;;;;;;;;;;;;;;;;;;;when entering the game reset
+				 variables;;;;;;;;;;;;;;
+				resetvar Macro
+					
+				        mov numarr[0],9
+					mov numarr[2],5
+					mov numarr[4],7
+					mov numarr[6],1
+					mov numarr[8],0
+					mov numarr[10],4
+					mov numaty,75
+					MOV counter,0
+				      
+					MOV rightans,0
+					MOV wrongans,0
+					MOV endflag,0
+					mov playerx,300
+					mov playery,450
+					
+					MOV numpointer,0
+					MOV operation,0
+				
+					MOV qflag,0
+					MOV printy,0
+				
+				endm resetvar
+				;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 05EA				mainmenu proc
+					resetvar
+ 05EA  C7 06 0000 R 0009     1	        mov numarr[0],9 
+ 05F0  C7 06 0002 R 0005     1		mov numarr[2],5 
+ 05F6  C7 06 0004 R 0007     1		mov numarr[4],7 
+ 05FC  C7 06 0006 R 0001     1		mov numarr[6],1 
+ 0602  C7 06 0008 R 0000     1		mov numarr[8],0 
+ 0608  C7 06 000A R 0004     1		mov numarr[10],4 
+ 060E  C7 06 0018 R 004B     1		mov numaty,75 
+ 0614  C6 06 001A R 00       1		MOV counter,0 
+ 0619  C6 06 0094 R 00       1		MOV rightans,0 
+ 061E  C6 06 0095 R 00       1		MOV wrongans,0 
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:26
+                                                             Page     1-21
+
+
+ 0623  C6 06 0096 R 00       1		MOV endflag,0 
+ 0628  C7 06 0097 R 012C     1		mov playerx,300 
+ 062E  C7 06 0099 R 01C2     1		mov playery,450 
+ 0634  C7 06 00AD R 0000     1		MOV numpointer,0 
+ 063A  C6 06 00A0 R 00       1		MOV operation,0 
+ 063F  C6 06 00AF R 00       1		MOV qflag,0 
+ 0644  C6 06 00B1 R 00       1		MOV printy,0 
+ 0649				begmenu:	
+ 0649  B4 00				mov ah,0
+ 064B  B0 13				mov al,13h
+ 064D  CD 10				int 10h
+					;;;;;clear the screen with black
+ 064F  B8 0600				mov ax,0600h
+ 0652  B7 0F				mov bh,0fh
+ 0654  B9 0000				mov cx,0
+ 0657  BA 184F				mov dx,184fh
+ 065A  CD 10				int 10h
+					;;;;;draw logo
+ 065C  B9 0078				mov cx,120
+ 065F  BA 0032				mov dx,50
+ 0662  9A 0000 ---- E			call no1
+ 0667  B9 00B4				mov cx,180
+ 066A  BA 003C				mov dx,60
+ 066D  9A 0000 ---- E			call no2
+ 0672  B9 00F0				mov cx,240
+ 0675  BA 003C				mov dx,60
+ 0678  9A 0000 ---- E			call no3
+					;;;;;write option1 ;;set cursor then di
+				splay string
+ 067D  B4 02				mov ah,2
+ 067F  BB 0000				MOV Bx,0
+ 0682  B2 0B			        MOV DL,11
+ 0684  B6 0F				MOV DH,15
+ 0686  CD 10			        INT 10H
+					displaystring toplay
+ 0688  50                    1			push ax 
+ 0689  52                    1			push dx 
+ 068A  B4 09                 1	                MOV AH,09H 
+ 068C  BA 006E R             1	                MOV DX,OFFSET toplay 
+ 068F  CD 21                 1	                INT 21H 
+ 0691  5A                    1			pop dx 
+ 0692  58                    1			pop ax 
+					;;;;;write option1 ;;set cursor then di
+				splay string
+ 0693  B4 02				mov ah,2
+ 0695  BB 0000				MOV Bx,0
+ 0698  B2 0C			        MOV DL,12
+ 069A  B6 12				MOV DH,18
+ 069C  CD 10			        INT 10H
+					displaystring toexit
+ 069E  50                    1			push ax 
+ 069F  52                    1			push dx 
+ 06A0  B4 09                 1	                MOV AH,09H 
+ 06A2  BA 0082 R             1	                MOV DX,OFFSET toexit 
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:26
+                                                             Page     1-22
+
+
+ 06A5  CD 21                 1	                INT 21H 
+ 06A7  5A                    1			pop dx 
+ 06A8  58                    1			pop ax 
+					;;;;;;
+ 06A9				waitmore:   ;;wait here till a valid key if pre
+				ssed
+ 06A9  B4 00				mov ah,0
+ 06AB  CD 16				int 16h
+ 06AD  3C 1B				cmp al,1bh
+ 06AF  74 07				jz endmenu
+ 06B1  3C 0D				cmp al,13
+ 06B3  75 F4				jnz waitmore
+ 06B5  EB 06 90				jmp exitmenu
+ 06B8				endmenu:   ;;;if he/she pressed exit alert flag
+ 06B8  C6 06 0096 R 01		 	mov endflag,1
+ 06BD				exitmenu:
+				
+ 06BD  CB			ret
+ 06BE				mainmenu endp
+				;;;;;;;;;;;;;;;;;;;
+ 06BE				main proc far             
+ 06BE  B8 ---- R			mov ax,@data
+ 06C1  8E D8				mov ds,ax  
+ 06C3				begingame:             
+ 06C3  9A 05EA ---- R			call mainmenu
+ 06C8  8A 2E 0096 R			mov ch,endflag
+ 06CC  80 FD 01				cmp ch,1
+ 06CF  74 5D			        jz theend
+ 06D1  B8 4F02				mov ax,4f02h ;change to video mode 640*
+				480
+ 06D4  BB 0101				mov bx,101h
+ 06D7  CD 10				int 10h
+				;;;;clear screen with white color;;;;;;;;;;;;;;
+ 06D9  B9 0000				mov cx,0
+ 06DC  BA 0000				mov dx,0
+ 06DF  B0 0F				mov al,0fh
+ 06E1  B4 0C				mov ah,0ch
+ 06E3					whitey:
+ 06E3					      whitex: 
+ 06E3  CD 10				      int 10h
+ 06E5  41			   	      inc cx
+ 06E6  81 F9 0280			      cmp cx,640
+ 06EA  75 F7				      jnz whitex
+ 06EC  B9 0000				mov cx,0
+ 06EF  42				inc dx
+ 06F0  81 FA 01E0			cmp dx,480
+ 06F4  75 ED				jnz whitey
+				;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				;
+				;;;;draw status bar;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+				;
+ 06F6  9A 013E ---- R			call updatebar
+				;;main game loop
+ 06FB					play:     
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:26
+                                                             Page     1-23
+
+
+ 06FB  9A 031B ---- R			    call updatescreen
+ 0700  9A 0425 ---- R			    call question
+ 0705  9A 04D2 ---- R			    call detectcollide  
+ 070A  9A 0561 ---- R			    call lastscreen ;;check if the game
+				 is won/lost
+ 070F  8A 2E 0096 R			    mov ch,endflag
+ 0713  80 FD 01				    cmp ch,1
+ 0716  74 AB				    jz begingame
+ 0718  B4 01				    mov ah,1
+ 071A  CD 16				    int 16h
+ 071C  74 DD				jz play	
+				
+ 071E  9A 01C0 ---- R			call checkpress
+ 0723  8A 2E 0096 R			mov ch,endflag
+ 0727  80 FD 01				cmp ch,1
+ 072A  74 97				jz begingame
+ 072C  EB CD				jmp play
+				;;;;;;;;;;;;;;;;;;;return control ;;;;;;;;;;;;;
+				;;;
+ 072E				theend:	
+				
+ 072E  B4 4C				MOV AH,4CH
+ 0730  CD 21				INT 21H
+ 0732				main endp 
+				
+				end main 
+
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:26
+                                                             Symbols-1
+
+
+Macros:
+
+		N a m e			Lines
+
+DISPLAYSTRING  . . . . . . . . .  	   7
+PRINTATPOS . . . . . . . . . . .  	  18
+RESETVAR . . . . . . . . . . . .  	  17
+
+Segments and Groups:
+
+                N a m e         	Length	 Align	Combine Class
+
+DGROUP . . . . . . . . . . . . .  	GROUP
+  _DATA  . . . . . . . . . . . .  	00B6	WORD	PUBLIC	'DATA'
+  STACK  . . . . . . . . . . . .  	0040	PARA	STACK	'STACK'
+MINIGAME_TEXT  . . . . . . . . .  	0732	WORD	PUBLIC	'CODE'
+
+Symbols:            
+
+                N a m e         	Type	 Value	 Attr
+
+ADDITION . . . . . . . . . . . .  	L NEAR	0490	MINIGAME_TEXT
+ADJUST . . . . . . . . . . . . .  	L NEAR	0060	MINIGAME_TEXT
+
+BARX . . . . . . . . . . . . . .  	L NEAR	014C	MINIGAME_TEXT
+BARY . . . . . . . . . . . . . .  	L NEAR	014C	MINIGAME_TEXT
+BEG  . . . . . . . . . . . . . .  	L NEAR	007F	MINIGAME_TEXT
+BEGINGAME  . . . . . . . . . . .  	L NEAR	06C3	MINIGAME_TEXT
+BEGMENU  . . . . . . . . . . . .  	L NEAR	0649	MINIGAME_TEXT
+
+CHECKANSWER  . . . . . . . . . .  	L NEAR	01D5	MINIGAME_TEXT
+CHECKCOLLIDE . . . . . . . . . .  	L NEAR	04E9	MINIGAME_TEXT
+CHECKPRESS . . . . . . . . . . .  	F PROC	01C0	MINIGAME_TEXT	Length = 0050
+CHECKRES . . . . . . . . . . . .  	F PROC	00E7	MINIGAME_TEXT	Length = 0057
+CHKRES . . . . . . . . . . . . .  	L NEAR	0118	MINIGAME_TEXT
+CLEARNUMBERS . . . . . . . . . .  	F PROC	02BD	MINIGAME_TEXT	Length = 005E
+CLRX . . . . . . . . . . . . . .  	L NEAR	02D4	MINIGAME_TEXT
+CLRY . . . . . . . . . . . . . .  	L NEAR	02D4	MINIGAME_TEXT
+COMPLETE . . . . . . . . . . . .  	L NEAR	009C	MINIGAME_TEXT
+CORRECT  . . . . . . . . . . . .  	L BYTE	001E	_DATA
+COUNTER  . . . . . . . . . . . .  	L BYTE	001A	_DATA
+
+DELAY_LOOP . . . . . . . . . . .  	L NEAR	001F	MINIGAME_TEXT
+DETECTCOLLIDE  . . . . . . . . .  	F PROC	04D2	MINIGAME_TEXT	Length = 0080
+
+EIGHT  . . . . . . . . . . . . .  	L NEAR	0263	MINIGAME_TEXT
+ENDBAR . . . . . . . . . . . . .  	L NEAR	01BB	MINIGAME_TEXT
+ENDCHECK . . . . . . . . . . . .  	L NEAR	020B	MINIGAME_TEXT
+ENDCLR . . . . . . . . . . . . .  	L NEAR	0316	MINIGAME_TEXT
+ENDCOLLISION . . . . . . . . . .  	L NEAR	054D	MINIGAME_TEXT
+ENDFLAG  . . . . . . . . . . . .  	L BYTE	0096	_DATA
+ENDG . . . . . . . . . . . . . .  	L NEAR	0205	MINIGAME_TEXT
+ENDGAME  . . . . . . . . . . . .  	L NEAR	0575	MINIGAME_TEXT
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:26
+                                                             Symbols-2
+
+
+ENDMENU  . . . . . . . . . . . .  	L NEAR	06B8	MINIGAME_TEXT
+ENDRAIN  . . . . . . . . . . . .  	L NEAR	02B8	MINIGAME_TEXT
+ENDUPDATE  . . . . . . . . . . .  	L NEAR	0354	MINIGAME_TEXT
+EXIT . . . . . . . . . . . . . .  	L NEAR	03AE	MINIGAME_TEXT
+EXITCHECK  . . . . . . . . . . .  	L NEAR	0139	MINIGAME_TEXT
+EXITMENU . . . . . . . . . . . .  	L NEAR	06BD	MINIGAME_TEXT
+
+FIVE . . . . . . . . . . . . . .  	L NEAR	024B	MINIGAME_TEXT
+FOUR . . . . . . . . . . . . . .  	L NEAR	0243	MINIGAME_TEXT
+
+GOPRINT  . . . . . . . . . . . .  	L NEAR	04C4	MINIGAME_TEXT
+
+HAVEONE  . . . . . . . . . . . .  	L NEAR	04CD	MINIGAME_TEXT
+HOLD . . . . . . . . . . . . . .  	L NEAR	05DE	MINIGAME_TEXT
+
+LABEL1 . . . . . . . . . . . . .  	L NEAR	036A	MINIGAME_TEXT
+LASTSCREEN . . . . . . . . . . .  	F PROC	0561	MINIGAME_TEXT	Length = 0089
+LOST . . . . . . . . . . . . . .  	L BYTE	003F	_DATA
+
+MAIN . . . . . . . . . . . . . .  	F PROC	06BE	MINIGAME_TEXT	Length = 0074
+MAINMENU . . . . . . . . . . . .  	F PROC	05EA	MINIGAME_TEXT	Length = 00D4
+MAXNO  . . . . . . . . . . . . .  	L NEAR	0543	MINIGAME_TEXT
+MINUS  . . . . . . . . . . . . .  	L NEAR	0074	MINIGAME_TEXT
+MULTIPLY . . . . . . . . . . . .  	L NEAR	04B2	MINIGAME_TEXT
+
+NEXT_FREQUENCY . . . . . . . . .  	L NEAR	000E	MINIGAME_TEXT
+NINE . . . . . . . . . . . . . .  	L NEAR	026B	MINIGAME_TEXT
+NO0  . . . . . . . . . . . . . .  	L FAR 	0000		External
+NO1  . . . . . . . . . . . . . .  	L FAR 	0000		External
+NO2  . . . . . . . . . . . . . .  	L FAR 	0000		External
+NO3  . . . . . . . . . . . . . .  	L FAR 	0000		External
+NO4  . . . . . . . . . . . . . .  	L FAR 	0000		External
+NO5  . . . . . . . . . . . . . .  	L FAR 	0000		External
+NO6  . . . . . . . . . . . . . .  	L FAR 	0000		External
+NO7  . . . . . . . . . . . . . .  	L FAR 	0000		External
+NO8  . . . . . . . . . . . . . .  	L FAR 	0000		External
+NO9  . . . . . . . . . . . . . .  	L FAR 	0000		External
+NOTCORRECT . . . . . . . . . . .  	L BYTE	002E	_DATA
+NOTEND . . . . . . . . . . . . .  	L NEAR	05E5	MINIGAME_TEXT
+NOTIN  . . . . . . . . . . . . .  	L NEAR	0538	MINIGAME_TEXT
+NUMARR . . . . . . . . . . . . .  	L WORD	0000	_DATA
+NUMATX . . . . . . . . . . . . .  	L WORD	000C	_DATA
+NUMATY . . . . . . . . . . . . .  	L WORD	0018	_DATA
+NUMBERS  . . . . . . . . . . . .  	F PROC	0210	MINIGAME_TEXT	Length = 00AD
+NUMCHK . . . . . . . . . . . . .  	L WORD	00AB	_DATA
+NUMPOINTER . . . . . . . . . . .  	L WORD	00AD	_DATA
+NUMTAKEN . . . . . . . . . . . .  	L WORD	00A3	_DATA	Length = 0004
+
+ONE  . . . . . . . . . . . . . .  	L NEAR	022B	MINIGAME_TEXT
+OP . . . . . . . . . . . . . . .  	L BYTE	009F	_DATA
+OP1  . . . . . . . . . . . . . .  	L WORD	009B	_DATA
+OP2  . . . . . . . . . . . . . .  	L WORD	009D	_DATA
+OPERATION  . . . . . . . . . . .  	L BYTE	00A0	_DATA
+
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:26
+                                                             Symbols-3
+
+
+PEKAX  . . . . . . . . . . . . .  	L NEAR	0303	MINIGAME_TEXT
+PEKAY  . . . . . . . . . . . . .  	L NEAR	0300	MINIGAME_TEXT
+PLAY . . . . . . . . . . . . . .  	L NEAR	06FB	MINIGAME_TEXT
+PLAYER . . . . . . . . . . . . .  	L FAR 	0000		External
+PLAYERX  . . . . . . . . . . . .  	L WORD	0097	_DATA
+PLAYERY  . . . . . . . . . . . .  	L WORD	0099	_DATA
+POSITIVEANS  . . . . . . . . . .  	L NEAR	047C	MINIGAME_TEXT
+PRINT  . . . . . . . . . . . . .  	F PROC	0359	MINIGAME_TEXT	Length = 005A
+PRINT1 . . . . . . . . . . . . .  	L NEAR	037A	MINIGAME_TEXT
+PRINTQUES  . . . . . . . . . . .  	F PROC	03B3	MINIGAME_TEXT	Length = 0072
+PRINTX . . . . . . . . . . . . .  	L BYTE	00B0	_DATA
+PRINTY . . . . . . . . . . . . .  	L BYTE	00B1	_DATA
+
+QFLAG  . . . . . . . . . . . . .  	L BYTE	00AF	_DATA
+QUESTION . . . . . . . . . . . .  	F PROC	0425	MINIGAME_TEXT	Length = 00AD
+
+RAIN . . . . . . . . . . . . . .  	L NEAR	0270	MINIGAME_TEXT
+RAND . . . . . . . . . . . . . .  	L WORD	001B	_DATA
+RANDOMIZE  . . . . . . . . . . .  	F PROC	0059	MINIGAME_TEXT	Length = 008E
+READTOCHK  . . . . . . . . . . .  	L NEAR	00FD	MINIGAME_TEXT
+RES  . . . . . . . . . . . . . .  	L WORD	00A1	_DATA
+RESET  . . . . . . . . . . . . .  	L NEAR	0342	MINIGAME_TEXT
+RIGHT  . . . . . . . . . . . . .  	L BYTE	001D	_DATA
+RIGHTANS . . . . . . . . . . . .  	L BYTE	0094	_DATA
+RIGHTSOUND . . . . . . . . . . .  	F PROC	0000	MINIGAME_TEXT	Length = 0033
+
+SEVEN  . . . . . . . . . . . . .  	L NEAR	025B	MINIGAME_TEXT
+SIX  . . . . . . . . . . . . . .  	L NEAR	0253	MINIGAME_TEXT
+SLEEPSEC . . . . . . . . . . . .  	F PROC	0552	MINIGAME_TEXT	Length = 000F
+SOUND  . . . . . . . . . . . . .  	L NEAR	0004	MINIGAME_TEXT
+STR1 . . . . . . . . . . . . . .  	L NEAR	05D0	MINIGAME_TEXT
+STRTUPDATE . . . . . . . . . . .  	L NEAR	0328	MINIGAME_TEXT
+SUBTRACTION  . . . . . . . . . .  	L NEAR	04A1	MINIGAME_TEXT
+
+TEMP . . . . . . . . . . . . . .  	L NEAR	048D	MINIGAME_TEXT
+THEEND . . . . . . . . . . . . .  	L NEAR	072E	MINIGAME_TEXT
+THEPAUSE . . . . . . . . . . . .  	L NEAR	05DB	MINIGAME_TEXT
+THREE  . . . . . . . . . . . . .  	L NEAR	023B	MINIGAME_TEXT
+TOEXIT . . . . . . . . . . . . .  	L BYTE	0082	_DATA
+TOLEFT . . . . . . . . . . . . .  	L NEAR	01E2	MINIGAME_TEXT
+TOPLAY . . . . . . . . . . . . .  	L BYTE	006E	_DATA
+TORIGHT  . . . . . . . . . . . .  	L NEAR	01F1	MINIGAME_TEXT
+TWO  . . . . . . . . . . . . . .  	L NEAR	0233	MINIGAME_TEXT
+
+UPDATEBAR  . . . . . . . . . . .  	F PROC	013E	MINIGAME_TEXT	Length = 0082
+UPDATESCREEN . . . . . . . . . .  	F PROC	031B	MINIGAME_TEXT	Length = 003E
+
+WAITMORE . . . . . . . . . . . .  	L NEAR	06A9	MINIGAME_TEXT
+WAITSEC  . . . . . . . . . . . .  	L NEAR	0559	MINIGAME_TEXT
+WHITEX . . . . . . . . . . . . .  	L NEAR	06E3	MINIGAME_TEXT
+WHITEY . . . . . . . . . . . . .  	L NEAR	06E3	MINIGAME_TEXT
+WON  . . . . . . . . . . . . . .  	L BYTE	0055	_DATA
+WRONG  . . . . . . . . . . . . .  	L NEAR	012D	MINIGAME_TEXT
+WRONGANS . . . . . . . . . . . .  	L BYTE	0095	_DATA
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:26
+                                                             Symbols-4
+
+
+WRONGSOUND . . . . . . . . . . .  	F PROC	0033	MINIGAME_TEXT	Length = 0026
+
+XMAX . . . . . . . . . . . . . .  	L WORD	00B4	_DATA
+XMIN . . . . . . . . . . . . . .  	L WORD	00B2	_DATA
+
+ZERO . . . . . . . . . . . . . .  	L NEAR	0223	MINIGAME_TEXT
+
+.PAUSE1  . . . . . . . . . . . .  	L NEAR	0049	MINIGAME_TEXT
+.PAUSE2  . . . . . . . . . . . .  	L NEAR	004C	MINIGAME_TEXT
+@CODE  . . . . . . . . . . . . .  	TEXT  minigame_TEXT		
+@CODESIZE  . . . . . . . . . . .  	TEXT  1		
+@CPU . . . . . . . . . . . . . .  	TEXT  0101h		
+@DATASIZE  . . . . . . . . . . .  	TEXT  1		
+@FILENAME  . . . . . . . . . . .  	TEXT  minigame		
+@VERSION . . . . . . . . . . . .  	TEXT  510		
+
+
+    944 Source  Lines
+   1057 Total   Lines
+    148 Symbols
+
+  47778 + 436952 Bytes symbol space free
+
+      0 Warning Errors
+      0 Severe  Errors

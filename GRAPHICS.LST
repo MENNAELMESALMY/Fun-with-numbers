@@ -1,0 +1,1181 @@
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:24
+                                                             Page     1-1
+
+
+				        public player
+					public no0
+					public no1
+					public no2
+					public no3
+					public no4
+					public no5
+					public no6
+					public no7
+					public no8
+					public no9
+				.model large
+				.stack 64
+				.data
+				;;;
+ = 0032				pecaWidth equ 50
+ = 0021				pecaHeight equ 33
+ 0000  0000			wi dw 0
+ 0002  0000			he dw 0
+ 0004  0000			BEGX DW ?
+ 0006  70 65 63 61 2E 62	pecaFilename DB 'peca.bin', 0
+       69 6E 00			
+ 000F  0000			pecaFilehandle DW ?
+ 0011  0672[			pecaData DB pecaWidth*pecaHeight dup(0)
+	   00			
+			 ]	
+				
+				;;;
+ = 0032				Width0 equ 50
+ = 004A				Height0 equ 74
+ 0683  6E 6F 30 2E 62 69	Filename0 DB 'no0.bin', 0
+       6E 00			
+ 068B  0000			Filehandle0 DW ?
+ 068D  0E74[			Data0 DB Width0*Height0 dup(0)
+	   00			
+			 ]	
+				
+				;;;
+				;;;
+ = 0032				Width1 equ 50
+ = 004E				Height1 equ 78
+ 1501  6E 6F 31 2E 62 69	Filename1 DB 'no1.bin', 0
+       6E 00			
+ 1509  0000			Filehandle1 DW ?
+ 150B  0F3C[			Data1 DB Width1*Height1 dup(0)
+	   00			
+			 ]	
+				
+				;;;
+				;;;
+ = 0032				Width2 equ 50
+ = 0035				Height2 equ 53
+ 2447  6E 6F 32 2E 62 69	Filename2 DB 'no2.bin', 0
+       6E 00			
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:24
+                                                             Page     1-2
+
+
+ 244F  0000			Filehandle2 DW ?
+ 2451  0A5A[			Data2 DB Width2*Height2 dup(0)
+	   00			
+			 ]	
+				
+				;;;
+				;;;
+ = 0032				Width3 equ 50
+ = 0032				Height3 equ 50
+ 2EAB  6E 6F 33 2E 62 69	Filename3 DB 'no3.bin', 0
+       6E 00			
+ 2EB3  0000			Filehandle3 DW ?
+ 2EB5  09C4[			Data3 DB Width3*Height3 dup(0)
+	   00			
+			 ]	
+				
+				;;;
+				;;;
+ = 0032				Width4 equ 50
+ = 004A				Height4 equ 74
+ 3879  6E 6F 34 2E 62 69	Filename4 DB 'no4.bin', 0
+       6E 00			
+ 3881  0000			Filehandle4 DW ?
+ 3883  0E74[			Data4 DB Width4*Height4 dup(0)
+	   00			
+			 ]	
+				
+				;;;
+				;;;
+ = 0032				Width5 equ 50
+ = 0032				Height5 equ 50
+ 46F7  6E 6F 35 2E 62 69	Filename5 DB 'no5.bin', 0
+       6E 00			
+ 46FF  0000			Filehandle5 DW ?
+ 4701  09C4[			Data5 DB Width5*Height5 dup(0)
+	   00			
+			 ]	
+				
+				;;;
+				;;;
+ = 0032				Width6 equ 50
+ = 003A				Height6 equ 58
+ 50C5  6E 6F 36 2E 62 69	Filename6 DB 'no6.bin', 0
+       6E 00			
+ 50CD  0000			Filehandle6 DW ?
+ 50CF  0B54[			Data6 DB Width6*Height6 dup(0)
+	   00			
+			 ]	
+				
+				;;;
+				;;;
+ = 0032				Width7 equ 50
+ = 0041				Height7 equ 65
+ 5C23  6E 6F 37 2E 62 69	Filename7 DB 'no7.bin', 0
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:24
+                                                             Page     1-3
+
+
+       6E 00			
+ 5C2B  0000			Filehandle7 DW ?
+ 5C2D  0CB2[			Data7 DB Width7*Height7 dup(0)
+	   00			
+			 ]	
+				
+				;;;
+				;;;
+ = 0032				Width8 equ 50
+ = 004E				Height8 equ 78
+ 68DF  6E 6F 38 2E 62 69	Filename8 DB 'no8.bin', 0
+       6E 00			
+ 68E7  0000			Filehandle8 DW ?
+ 68E9  0F3C[			Data8 DB Width8*Height8 dup(0)
+	   00			
+			 ]	
+				
+				;;;
+				;;;
+ = 0032				Width9 equ 50
+ = 0056				Height9 equ 86
+ 7825  6E 6F 39 2E 62 69	Filename9 DB 'no9.bin', 0
+       6E 00			
+ 782D  0000			Filehandle9 DW ?
+ 782F  10CC[			Data9 DB Width9*Height9 dup(0)
+	   00			
+			 ]	
+				
+				;;;
+				.code 
+ 0000				player proc far
+ 0000  50			PUSH AX
+ 0001  53			    PUSH BX
+ 0002  51			    PUSH CX
+ 0003  52			    PUSH DX
+ 0004  51			    PUSH CX
+ 0005  52			    PUSH DX
+				    ; Open file
+				
+ 0006  B4 3D			    MOV AH, 3Dh
+ 0008  B0 00			    MOV AL, 0 ; read only
+ 000A  8D 16 0006 R		    LEA DX, pecaFilename
+ 000E  CD 21			    INT 21h
+ 0010  A3 000F R		    MOV [pecaFilehandle], AX
+				    ;;;;;;;;;;;read data
+ 0013  B4 3F			    MOV AH,3Fh
+ 0015  8B 1E 000F R		    MOV BX, [pecaFilehandle]
+ 0019  B9 0672			    MOV CX,pecaWidth*pecaHeight ; number of byt
+				es to read
+ 001C  8D 16 0011 R		    LEA DX, pecaData
+ 0020  CD 21			    INT 21h
+				    ;;;;;;;;;;;;;;;;;;
+					
+ 0022  8D 1E 0011 R		    LEA BX , pecaData ; BL contains index at th
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:24
+                                                             Page     1-4
+
+
+				e current drawn pixel
+ 0026  5A			    POP DX
+ 0027  59			    POP CX
+ 0028  89 16 0002 R		    MOV he,dx
+ 002C  89 0E 0000 R		    MOV wi,cx
+ 0030  83 06 0002 R 11		    add he,17
+ 0035  83 06 0000 R 19		    add wi,25
+ 003A  83 E9 19			    SUB CX,25       ;;;;;;ADJUST TO TOP LEFT
+ 003D  83 EA 10			    SUB DX,16
+ 0040  89 0E 0004 R		    MOV BEGX,CX
+ 0044  B4 0C			    MOV AH,0ch
+				  
+				; Drawing loop
+ 0046				drawLoopL:
+ 0046  8A 07			    MOV AL,[BX]
+ 0048  CD 10			    INT 10h 
+ 004A  41			    INC CX
+ 004B  43			    INC BX
+ 004C  3B 0E 0000 R		    CMP CX,wi
+ 0050  75 F4			JNE drawLoopL 	
+ 0052  8B 0E 0004 R		    MOV CX ,BEGX	
+ 0056  42			    INC DX
+ 0057  3B 16 0002 R		    CMP DX , he
+ 005B  75 E9			JNE drawLoopL
+				
+				    ;;;;;;;;;;;;;;;;close file
+ 005D  B4 3E			    MOV AH, 3Eh
+ 005F  8B 1E 000F R		    MOV BX, [pecaFilehandle]
+ 0063  CD 21			    INT 21h
+				
+ 0065  5A			    POP DX
+ 0066  59			    POP CX
+ 0067  5B			    POP BX
+ 0068  58			    POP AX
+ 0069  CB			ret 
+ 006A				player endp   
+				
+				;;;;
+ 006A				no0 proc far
+ 006A  50			PUSH AX
+ 006B  53			    PUSH BX
+ 006C  51			    PUSH CX
+ 006D  52			    PUSH DX
+ 006E  51			    PUSH CX
+ 006F  52			    PUSH DX
+				    ; Open file
+				
+ 0070  B4 3D			    MOV AH, 3Dh
+ 0072  B0 00			    MOV AL, 0 ; read only
+ 0074  8D 16 0683 R		    LEA DX, Filename0
+ 0078  CD 21			    INT 21h
+ 007A  A3 068B R		    MOV [Filehandle0], AX
+				    ;;;;;;;;;;;read data
+ 007D  B4 3F			    MOV AH,3Fh
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:24
+                                                             Page     1-5
+
+
+ 007F  8B 1E 068B R		    MOV BX, [Filehandle0]
+ 0083  B9 0E74			    MOV CX,Width0*Height0 ; number of bytes to 
+				read
+ 0086  8D 16 068D R		    LEA DX, Data0
+ 008A  CD 21			    INT 21h
+				    ;;;;;;;;;;;;;;;;;;
+				
+ 008C  8D 1E 068D R		    LEA BX , Data0 ; BL contains index at the c
+				urrent drawn pixel
+ 0090  5A			    POP DX
+ 0091  59			    POP CX
+ 0092  89 16 0002 R		    MOV he,dx
+ 0096  89 0E 0000 R		    MOV wi,cx
+ 009A  83 06 0002 R 25		    add he,37
+ 009F  83 06 0000 R 19		    add wi,25
+ 00A4  83 E9 19			    SUB CX,25       ;;;;;;ADJUST TO TOP LEFT
+ 00A7  83 EA 31			    SUB DX,49
+ 00AA  89 0E 0004 R		    MOV BEGX,CX
+ 00AE  B4 0C			    MOV AH,0ch
+				 
+ 00B0  8B DA				mov bx,dx
+ 00B2  83 C3 0C				add bx,12
+ 00B5  B0 0F				mov al,0fh
+ 00B7  B4 0C				mov ah,0ch
+ 00B9					clry0:
+ 00B9					      clrx0: 
+ 00B9  CD 10				      int 10h
+ 00BB  41			   	      inc cx
+ 00BC  3B 0E 0000 R			      cmp cx,wi
+ 00C0  75 F7				      jnz clrx0
+ 00C2  8B 0E 0004 R			mov cx,begx
+ 00C6  42				inc dx
+ 00C7  3B D3				cmp dx,bx
+ 00C9  75 EE				jnz clry0
+ 00CB  8D 1E 068D R		  LEA BX , Data0 ; BL contains index at the cur
+				rent drawn pixel
+				; Drawing loop
+ 00CF				drawLoopL0:
+ 00CF  8A 07			    MOV AL,[BX]
+ 00D1  CD 10			    INT 10h 
+ 00D3  41			    INC CX
+ 00D4  43			    INC BX
+ 00D5  3B 0E 0000 R		    CMP CX,wi
+ 00D9  75 F4			JNE drawLoopL0 	
+ 00DB  8B 0E 0004 R		    MOV CX ,BEGX	
+ 00DF  42			    INC DX
+ 00E0  3B 16 0002 R		    CMP DX , he
+ 00E4  75 E9			JNE drawLoopL0
+				
+				    ;;;;;;;;;;;;;;;;close file
+ 00E6  B4 3E			    MOV AH, 3Eh
+ 00E8  8B 1E 068B R		    MOV BX, [Filehandle0]
+ 00EC  CD 21			    INT 21h
+				
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:24
+                                                             Page     1-6
+
+
+ 00EE  5A			    POP DX
+ 00EF  59			    POP CX
+ 00F0  5B			    POP BX
+ 00F1  58			    POP AX
+ 00F2  CB			ret 
+ 00F3				no0 endp  
+				;;;;
+ 00F3				no1 proc far
+ 00F3  50			PUSH AX
+ 00F4  53			    PUSH BX
+ 00F5  51			    PUSH CX
+ 00F6  52			    PUSH DX
+ 00F7  51			    PUSH CX
+ 00F8  52			    PUSH DX
+				    ; Open file
+				
+ 00F9  B4 3D			    MOV AH, 3Dh
+ 00FB  B0 00			    MOV AL, 0 ; read only
+ 00FD  8D 16 1501 R		    LEA DX, Filename1
+ 0101  CD 21			    INT 21h
+ 0103  A3 1509 R		    MOV [Filehandle1], AX
+				    ;;;;;;;;;;;read data
+ 0106  B4 3F			    MOV AH,3Fh
+ 0108  8B 1E 1509 R		    MOV BX, [Filehandle1]
+ 010C  B9 0F3C			    MOV CX,Width1*Height1 ; number of bytes to 
+				read
+ 010F  8D 16 150B R		    LEA DX, Data1
+ 0113  CD 21			    INT 21h
+				    ;;;;;;;;;;;;;;;;;;  
+ 0115  5A			    POP DX
+ 0116  59			    POP CX
+ 0117  89 16 0002 R		    MOV he,dx
+ 011B  89 0E 0000 R		    MOV wi,cx
+ 011F  83 06 0002 R 27		    add he,39
+ 0124  83 06 0000 R 19		    add wi,25
+ 0129  83 E9 19			    SUB CX,25       ;;;;;;ADJUST TO TOP LEFT
+ 012C  83 EA 2F			    SUB DX,47
+ 012F  89 0E 0004 R		    MOV BEGX,CX
+ 0133  B4 0C			    MOV AH,0ch
+ 0135  8B DA			    mov bx,dx
+ 0137  83 C3 08				add bx,8
+ 013A  B0 0F				mov al,0fh
+ 013C  B4 0C				mov ah,0ch
+ 013E					clry1:
+ 013E					      clrx1: 
+ 013E  CD 10				      int 10h
+ 0140  41			   	      inc cx
+ 0141  3B 0E 0000 R			      cmp cx,wi
+ 0145  75 F7				      jnz clrx1
+ 0147  8B 0E 0004 R			mov cx,begx
+ 014B  42				inc dx
+ 014C  3B D3				cmp dx,bx
+ 014E  75 EE				jnz clry1
+ 0150  8D 1E 150B R		  LEA BX , Data1 ; BL contains index at the cur
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:24
+                                                             Page     1-7
+
+
+				rent drawn pixel
+				
+				; Drawing loop
+ 0154				drawLoopL1:
+ 0154  8A 07			    MOV AL,[BX]
+ 0156  CD 10			    INT 10h 
+ 0158  41			    INC CX
+ 0159  43			    INC BX
+ 015A  3B 0E 0000 R		    CMP CX,wi
+ 015E  75 F4			JNE drawLoopL1 	
+ 0160  8B 0E 0004 R		    MOV CX ,BEGX	
+ 0164  42			    INC DX
+ 0165  3B 16 0002 R		    CMP DX , he
+ 0169  75 E9			JNE drawLoopL1
+				
+				    ;;;;;;;;;;;;;;;;close file
+ 016B  B4 3E			    MOV AH, 3Eh
+ 016D  8B 1E 1509 R		    MOV BX, [Filehandle1]
+ 0171  CD 21			    INT 21h
+				
+ 0173  5A			    POP DX
+ 0174  59			    POP CX
+ 0175  5B			    POP BX
+ 0176  58			    POP AX
+ 0177  CB			ret 
+ 0178				no1 endp   
+				
+				;;;;
+ 0178				no2 proc far
+ 0178  50			    PUSH AX
+ 0179  53			    PUSH BX
+ 017A  51			    PUSH CX
+ 017B  52			    PUSH DX
+ 017C  51			    PUSH CX
+ 017D  52			    PUSH DX
+				    ; Open file
+				
+ 017E  B4 3D			    MOV AH, 3Dh
+ 0180  B0 00			    MOV AL, 0 ; read only
+ 0182  8D 16 2447 R		    LEA DX, Filename2
+ 0186  CD 21			    INT 21h
+ 0188  A3 244F R		    MOV [Filehandle2], AX
+				    ;;;;;;;;;;;read data
+ 018B  B4 3F			    MOV AH,3Fh
+ 018D  8B 1E 244F R		    MOV BX, [Filehandle2]
+ 0191  B9 0A5A			    MOV CX,Width2*Height2 ; number of bytes to 
+				read
+ 0194  8D 16 2451 R		    LEA DX, Data2
+ 0198  CD 21			    INT 21h
+				    ;;;;;;;;;;;;;;;;;;
+					
+ 019A  8D 1E 2451 R		    LEA BX , Data2 ; BL contains index at the c
+				urrent drawn pixel
+ 019E  5A			    POP DX
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:24
+                                                             Page     1-8
+
+
+ 019F  59			    POP CX
+ 01A0  89 16 0002 R		    MOV he,dx
+ 01A4  89 0E 0000 R		    MOV wi,cx
+ 01A8  83 06 0002 R 1B		    add he,27
+ 01AD  83 06 0000 R 19		    add wi,25
+ 01B2  83 E9 19			    SUB CX,25       ;;;;;;ADJUST TO TOP LEFT
+ 01B5  83 EA 3B			    SUB DX,59
+ 01B8  89 0E 0004 R		    MOV BEGX,CX
+ 01BC  B4 0C			    MOV AH,0ch
+ 01BE  8B DA			     mov bx,dx
+ 01C0  83 C3 21				add bx,33
+ 01C3  B0 0F				mov al,0fh
+ 01C5  B4 0C				mov ah,0ch
+ 01C7					clry2:
+ 01C7					      clrx2: 
+ 01C7  CD 10				      int 10h
+ 01C9  41			   	      inc cx
+ 01CA  3B 0E 0000 R			      cmp cx,wi
+ 01CE  75 F7				      jnz clrx2
+ 01D0  8B 0E 0004 R			mov cx,begx
+ 01D4  42				inc dx
+ 01D5  3B D3				cmp dx,bx
+ 01D7  75 EE				jnz clry2
+ 01D9  8D 1E 2451 R		  LEA BX , Data2 ; BL contains index at the cur
+				rent drawn pixel
+				
+				  
+				; Drawing loop
+ 01DD				drawLoopL2:
+ 01DD  8A 07			    MOV AL,[BX]
+ 01DF  CD 10			    INT 10h 
+ 01E1  41			    INC CX
+ 01E2  43			    INC BX
+ 01E3  3B 0E 0000 R		    CMP CX,wi
+ 01E7  75 F4			JNE drawLoopL2 	
+ 01E9  8B 0E 0004 R		    MOV CX ,BEGX	
+ 01ED  42			    INC DX
+ 01EE  3B 16 0002 R		    CMP DX , he
+ 01F2  75 E9			JNE drawLoopL2
+				
+				    ;;;;;;;;;;;;;;;;close file
+ 01F4  B4 3E			    MOV AH, 3Eh
+ 01F6  8B 1E 244F R		    MOV BX, [Filehandle2]
+ 01FA  CD 21			    INT 21h
+				
+ 01FC  5A			    POP DX
+ 01FD  59			    POP CX
+ 01FE  5B			    POP BX
+ 01FF  58			    POP AX
+ 0200  CB			ret 
+ 0201				no2 endp   
+				
+				;;;;
+ 0201				no3 proc far
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:24
+                                                             Page     1-9
+
+
+ 0201  50			PUSH AX
+ 0202  53			    PUSH BX
+ 0203  51			    PUSH CX
+ 0204  52			    PUSH DX
+ 0205  51			    PUSH CX
+ 0206  52			    PUSH DX
+				    ; Open file
+				
+ 0207  B4 3D			    MOV AH, 3Dh
+ 0209  B0 00			    MOV AL, 0 ; read only
+ 020B  8D 16 2EAB R		    LEA DX, Filename3
+ 020F  CD 21			    INT 21h
+ 0211  A3 2EB3 R		    MOV [Filehandle3], AX
+				    ;;;;;;;;;;;read data
+ 0214  B4 3F			    MOV AH,3Fh
+ 0216  8B 1E 2EB3 R		    MOV BX, [Filehandle3]
+ 021A  B9 09C4			    MOV CX,Width3*Height3 ; number of bytes to 
+				read
+ 021D  8D 16 2EB5 R		    LEA DX, Data3
+ 0221  CD 21			    INT 21h
+				    ;;;;;;;;;;;;;;;;;;
+					
+ 0223  8D 1E 2EB5 R		    LEA BX , Data3 ; BL contains index at the c
+				urrent drawn pixel
+ 0227  5A			    POP DX
+ 0228  59			    POP CX
+ 0229  89 16 0002 R		    MOV he,dx
+ 022D  89 0E 0000 R		    MOV wi,cx
+ 0231  83 06 0002 R 19		    add he,25
+ 0236  83 06 0000 R 19		    add wi,25
+ 023B  83 E9 19			    SUB CX,25       ;;;;;;ADJUST TO TOP LEFT
+ 023E  83 EA 3D			    SUB DX,61
+ 0241  89 0E 0004 R		    MOV BEGX,CX
+ 0245  B4 0C			    MOV AH,0ch
+ 0247  8B DA			    mov bx,dx
+ 0249  83 C3 24				add bx,36
+ 024C  B0 0F				mov al,0fh
+ 024E  B4 0C				mov ah,0ch
+ 0250					clry3:
+ 0250					      clrx3: 
+ 0250  CD 10				      int 10h
+ 0252  41			   	      inc cx
+ 0253  3B 0E 0000 R			      cmp cx,wi
+ 0257  75 F7				      jnz clrx3
+ 0259  8B 0E 0004 R			mov cx,begx
+ 025D  42				inc dx
+ 025E  3B D3				cmp dx,bx
+ 0260  75 EE				jnz clry3
+ 0262  8D 1E 2EB5 R		  LEA BX , Data3 ; BL contains index at the cur
+				rent drawn pixel
+				
+				  
+				; Drawing loop
+ 0266				drawLoopL3:
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:24
+                                                             Page     1-10
+
+
+ 0266  8A 07			    MOV AL,[BX]
+ 0268  CD 10			    INT 10h 
+ 026A  41			    INC CX
+ 026B  43			    INC BX
+ 026C  3B 0E 0000 R		    CMP CX,wi
+ 0270  75 F4			JNE drawLoopL3	
+ 0272  8B 0E 0004 R		    MOV CX ,BEGX	
+ 0276  42			    INC DX
+ 0277  3B 16 0002 R		    CMP DX , he
+ 027B  75 E9			JNE drawLoopL3
+				
+				    ;;;;;;;;;;;;;;;;close file
+ 027D  B4 3E			    MOV AH, 3Eh
+ 027F  8B 1E 2EB3 R		    MOV BX, [Filehandle3]
+ 0283  CD 21			    INT 21h
+				
+ 0285  5A			    POP DX
+ 0286  59			    POP CX
+ 0287  5B			    POP BX
+ 0288  58			    POP AX
+ 0289  CB			ret 
+ 028A				no3 endp   
+				
+				;;;;
+ 028A				no4 proc far
+ 028A  50			    PUSH AX
+ 028B  53			    PUSH BX
+ 028C  51			    PUSH CX
+ 028D  52			    PUSH DX
+ 028E  51			    PUSH CX
+ 028F  52			    PUSH DX
+				    ; Open file
+				
+ 0290  B4 3D			    MOV AH, 3Dh
+ 0292  B0 00			    MOV AL, 0 ; read only
+ 0294  8D 16 3879 R		    LEA DX, Filename4
+ 0298  CD 21			    INT 21h
+ 029A  A3 3881 R		    MOV [Filehandle4], AX
+				    ;;;;;;;;;;;read data
+ 029D  B4 3F			    MOV AH,3Fh
+ 029F  8B 1E 3881 R		    MOV BX, [Filehandle4]
+ 02A3  B9 0E74			    MOV CX,Width4*Height4 ; number of bytes to 
+				read
+ 02A6  8D 16 3883 R		    LEA DX, Data4
+ 02AA  CD 21			    INT 21h
+				    ;;;;;;;;;;;;;;;;;;
+					
+ 02AC  8D 1E 3883 R		    LEA BX , Data4 ; BL contains index at the c
+				urrent drawn pixel
+ 02B0  5A			    POP DX
+ 02B1  59			    POP CX
+ 02B2  89 16 0002 R		    MOV he,dx
+ 02B6  89 0E 0000 R		    MOV wi,cx
+ 02BA  83 06 0002 R 25		    add he,37
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:24
+                                                             Page     1-11
+
+
+ 02BF  83 06 0000 R 19		    add wi,25
+ 02C4  83 E9 19			    SUB CX,25       ;;;;;;ADJUST TO TOP LEFT
+ 02C7  83 EA 31			    SUB DX,49
+ 02CA  89 0E 0004 R		    MOV BEGX,CX
+ 02CE  B4 0C			    MOV AH,0ch
+ 02D0  8B DA			    mov bx,dx
+ 02D2  83 C3 0C				add bx,12
+ 02D5  B0 0F				mov al,0fh
+ 02D7  B4 0C				mov ah,0ch
+ 02D9					clry4:
+ 02D9					      clrx4: 
+ 02D9  CD 10				      int 10h
+ 02DB  41			   	      inc cx
+ 02DC  3B 0E 0000 R			      cmp cx,wi
+ 02E0  75 F7				      jnz clrx4
+ 02E2  8B 0E 0004 R			mov cx,begx
+ 02E6  42				inc dx
+ 02E7  3B D3				cmp dx,bx
+ 02E9  75 EE				jnz clry4
+ 02EB  8D 1E 3883 R		  LEA BX , Data4 ; BL contains index at the cur
+				rent drawn pixel
+				
+				  
+				; Drawing loop
+ 02EF				drawLoopL4:
+ 02EF  8A 07			    MOV AL,[BX]
+ 02F1  CD 10			    INT 10h 
+ 02F3  41			    INC CX
+ 02F4  43			    INC BX
+ 02F5  3B 0E 0000 R		    CMP CX,wi
+ 02F9  75 F4			JNE drawLoopL4 	
+ 02FB  8B 0E 0004 R		    MOV CX ,BEGX	
+ 02FF  42			    INC DX
+ 0300  3B 16 0002 R		    CMP DX , he
+ 0304  75 E9			JNE drawLoopL4
+				
+				    ;;;;;;;;;;;;;;;;close file
+ 0306  B4 3E			    MOV AH, 3Eh
+ 0308  8B 1E 3881 R		    MOV BX, [Filehandle4]
+ 030C  CD 21			    INT 21h
+				
+ 030E  5A			    POP DX
+ 030F  59			    POP CX
+ 0310  5B			    POP BX
+ 0311  58			    POP AX
+ 0312  CB			ret 
+ 0313				no4 endp   
+				
+				;;;;
+ 0313				no5 proc far
+ 0313  50			PUSH AX
+ 0314  53			    PUSH BX
+ 0315  51			    PUSH CX
+ 0316  52			    PUSH DX
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:24
+                                                             Page     1-12
+
+
+ 0317  51			    PUSH CX
+ 0318  52			    PUSH DX
+				    ; Open file
+				
+ 0319  B4 3D			    MOV AH, 3Dh
+ 031B  B0 00			    MOV AL, 0 ; read only
+ 031D  8D 16 46F7 R		    LEA DX, Filename5
+ 0321  CD 21			    INT 21h
+ 0323  A3 46FF R		    MOV [Filehandle5], AX
+				    ;;;;;;;;;;;read data
+ 0326  B4 3F			    MOV AH,3Fh
+ 0328  8B 1E 46FF R		    MOV BX, [Filehandle5]
+ 032C  B9 09C4			    MOV CX,Width5*Height5 ; number of bytes to 
+				read
+ 032F  8D 16 4701 R		    LEA DX,Data5
+ 0333  CD 21			    INT 21h
+				    ;;;;;;;;;;;;;;;;;;
+					
+ 0335  8D 1E 4701 R		    LEA BX , Data5 ; BL contains index at the c
+				urrent drawn pixel
+ 0339  5A			    POP DX
+ 033A  59			    POP CX
+ 033B  89 16 0002 R		    MOV he,dx
+ 033F  89 0E 0000 R		    MOV wi,cx
+ 0343  83 06 0002 R 19		    add he,25
+ 0348  83 06 0000 R 19		    add wi,25
+ 034D  83 E9 19			    SUB CX,25       ;;;;;;ADJUST TO TOP LEFT
+ 0350  83 EA 3D			    SUB DX,61
+ 0353  89 0E 0004 R		    MOV BEGX,CX
+ 0357  B4 0C			    MOV AH,0ch
+ 0359  8B DA			    mov bx,dx
+ 035B  83 C3 24				add bx,36
+ 035E  B0 0F				mov al,0fh
+ 0360  B4 0C				mov ah,0ch
+ 0362					clry5:
+ 0362					      clrx5: 
+ 0362  CD 10				      int 10h
+ 0364  41			   	      inc cx
+ 0365  3B 0E 0000 R			      cmp cx,wi
+ 0369  75 F7				      jnz clrx5
+ 036B  8B 0E 0004 R			mov cx,begx
+ 036F  42				inc dx
+ 0370  3B D3				cmp dx,bx
+ 0372  75 EE				jnz clry5
+ 0374  8D 1E 4701 R		  LEA BX , Data5 ; BL contains index at the cur
+				rent drawn pixel
+				
+				  
+				; Drawing loop
+ 0378				drawLoopL5:
+ 0378  8A 07			    MOV AL,[BX]
+ 037A  CD 10			    INT 10h 
+ 037C  41			    INC CX
+ 037D  43			    INC BX
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:24
+                                                             Page     1-13
+
+
+ 037E  3B 0E 0000 R		    CMP CX,wi
+ 0382  75 F4			JNE drawLoopL5	
+ 0384  8B 0E 0004 R		    MOV CX ,BEGX	
+ 0388  42			    INC DX
+ 0389  3B 16 0002 R		    CMP DX , he
+ 038D  75 E9			JNE drawLoopL5
+				
+				    ;;;;;;;;;;;;;;;;close file
+ 038F  B4 3E			    MOV AH, 3Eh
+ 0391  8B 1E 46FF R		    MOV BX, [Filehandle5]
+ 0395  CD 21			    INT 21h
+				
+ 0397  5A			    POP DX
+ 0398  59			    POP CX
+ 0399  5B			    POP BX
+ 039A  58			    POP AX
+ 039B  CB			ret 
+ 039C				no5 endp   
+				;;;;
+ 039C				no6 proc far
+ 039C  50			PUSH AX
+ 039D  53			    PUSH BX
+ 039E  51			    PUSH CX
+ 039F  52			    PUSH DX
+ 03A0  51			    PUSH CX
+ 03A1  52			    PUSH DX
+				    ; Open file
+				
+ 03A2  B4 3D			    MOV AH, 3Dh
+ 03A4  B0 00			    MOV AL, 0 ; read only
+ 03A6  8D 16 50C5 R		    LEA DX, Filename6
+ 03AA  CD 21			    INT 21h
+ 03AC  A3 50CD R		    MOV [Filehandle6], AX
+				    ;;;;;;;;;;;read data
+ 03AF  B4 3F			    MOV AH,3Fh
+ 03B1  8B 1E 50CD R		    MOV BX, [Filehandle6]
+ 03B5  B9 0B54			    MOV CX,Width6*Height6 ; number of bytes to 
+				read
+ 03B8  8D 16 50CF R		    LEA DX, Data6
+ 03BC  CD 21			    INT 21h
+				    ;;;;;;;;;;;;;;;;;;
+					
+ 03BE  8D 1E 50CF R		    LEA BX , Data6 ; BL contains index at the c
+				urrent drawn pixel
+ 03C2  5A			    POP DX
+ 03C3  59			    POP CX
+ 03C4  89 16 0002 R		    MOV he,dx
+ 03C8  89 0E 0000 R		    MOV wi,cx
+ 03CC  83 06 0002 R 1D		    add he,29
+ 03D1  83 06 0000 R 19		    add wi,25
+ 03D6  83 E9 19			    SUB CX,25       ;;;;;;ADJUST TO TOP LEFT
+ 03D9  83 EA 39			    SUB DX,57
+ 03DC  89 0E 0004 R		    MOV BEGX,CX
+ 03E0  B4 0C			    MOV AH,0ch
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:24
+                                                             Page     1-14
+
+
+ 03E2  8B DA			    mov bx,dx
+ 03E4  83 C3 1C				add bx,28
+ 03E7  B0 0F				mov al,0fh
+ 03E9  B4 0C				mov ah,0ch
+ 03EB					clry6:
+ 03EB					      clrx6: 
+ 03EB  CD 10				      int 10h
+ 03ED  41			   	      inc cx
+ 03EE  3B 0E 0000 R			      cmp cx,wi
+ 03F2  75 F7				      jnz clrx6
+ 03F4  8B 0E 0004 R			mov cx,begx
+ 03F8  42				inc dx
+ 03F9  3B D3				cmp dx,bx
+ 03FB  75 EE				jnz clry6
+ 03FD  8D 1E 50CF R		  LEA BX , Data6 ; BL contains index at the cur
+				rent drawn pixel
+				
+				  
+				; Drawing loop
+ 0401				drawLoopL6:
+ 0401  8A 07			    MOV AL,[BX]
+ 0403  CD 10			    INT 10h 
+ 0405  41			    INC CX
+ 0406  43			    INC BX
+ 0407  3B 0E 0000 R		    CMP CX,wi
+ 040B  75 F4			JNE drawLoopL6 	
+ 040D  8B 0E 0004 R		    MOV CX ,BEGX	
+ 0411  42			    INC DX
+ 0412  3B 16 0002 R		    CMP DX , he
+ 0416  75 E9			JNE drawLoopL6
+				
+				    ;;;;;;;;;;;;;;;;close file
+ 0418  B4 3E			    MOV AH, 3Eh
+ 041A  8B 1E 50CD R		    MOV BX, [Filehandle6]
+ 041E  CD 21			    INT 21h
+				
+ 0420  5A			    POP DX
+ 0421  59			    POP CX
+ 0422  5B			    POP BX
+ 0423  58			    POP AX
+ 0424  CB			ret 
+ 0425				no6 endp   
+				;;;;
+ 0425				no7 proc far
+ 0425  50			PUSH AX
+ 0426  53			    PUSH BX
+ 0427  51			    PUSH CX
+ 0428  52			    PUSH DX
+ 0429  51			    PUSH CX
+ 042A  52			    PUSH DX
+				    ; Open file
+				
+ 042B  B4 3D			    MOV AH, 3Dh
+ 042D  B0 00			    MOV AL, 0 ; read only
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:24
+                                                             Page     1-15
+
+
+ 042F  8D 16 5C23 R		    LEA DX, Filename7
+ 0433  CD 21			    INT 21h
+ 0435  A3 5C2B R		    MOV [Filehandle7], AX
+				    ;;;;;;;;;;;read data
+ 0438  B4 3F			    MOV AH,3Fh
+ 043A  8B 1E 5C2B R		    MOV BX, [Filehandle7]
+ 043E  B9 0CB2			    MOV CX,Width7*Height7 ; number of bytes to 
+				read
+ 0441  8D 16 5C2D R		    LEA DX, Data7
+ 0445  CD 21			    INT 21h
+				    ;;;;;;;;;;;;;;;;;;
+					
+ 0447  8D 1E 5C2D R		    LEA BX ,Data7 ; BL contains index at the cu
+				rrent drawn pixel
+ 044B  5A			    POP DX
+ 044C  59			    POP CX
+ 044D  89 16 0002 R		    MOV he,dx
+ 0451  89 0E 0000 R		    MOV wi,cx
+ 0455  83 06 0002 R 21		    add he,33
+ 045A  83 06 0000 R 19		    add wi,25
+ 045F  83 E9 19			    SUB CX,25       ;;;;;;ADJUST TO TOP LEFT
+ 0462  83 EA 33			    SUB DX,51
+ 0465  89 0E 0004 R		    MOV BEGX,CX
+ 0469  B4 0C			    MOV AH,0ch
+ 046B  8B DA			    mov bx,dx
+ 046D  83 C3 15				add bx,21
+ 0470  B0 0F				mov al,0fh
+ 0472  B4 0C				mov ah,0ch
+ 0474					clry7:
+ 0474					      clrx7: 
+ 0474  CD 10				      int 10h
+ 0476  41			   	      inc cx
+ 0477  3B 0E 0000 R			      cmp cx,wi
+ 047B  75 F7				      jnz clrx7
+ 047D  8B 0E 0004 R			mov cx,begx
+ 0481  42				inc dx
+ 0482  3B D3				cmp dx,bx
+ 0484  75 EE				jnz clry7
+ 0486  8D 1E 5C2D R		  LEA BX , Data7 ; BL contains index at the cur
+				rent drawn pixel
+				
+				  
+				; Drawing loop
+ 048A				drawLoopL7:
+ 048A  8A 07			    MOV AL,[BX]
+ 048C  CD 10			    INT 10h 
+ 048E  41			    INC CX
+ 048F  43			    INC BX
+ 0490  3B 0E 0000 R		    CMP CX,wi
+ 0494  75 F4			JNE drawLoopL7 	
+ 0496  8B 0E 0004 R		    MOV CX ,BEGX	
+ 049A  42			    INC DX
+ 049B  3B 16 0002 R		    CMP DX , he
+ 049F  75 E9			JNE drawLoopL7
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:24
+                                                             Page     1-16
+
+
+				
+				    ;;;;;;;;;;;;;;;;close file
+ 04A1  B4 3E			    MOV AH, 3Eh
+ 04A3  8B 1E 5C2B R		    MOV BX, [Filehandle7]
+ 04A7  CD 21			    INT 21h
+				
+ 04A9  5A			    POP DX
+ 04AA  59			    POP CX
+ 04AB  5B			    POP BX
+ 04AC  58			    POP AX
+ 04AD  CB			ret 
+ 04AE				no7 endp 
+				;;;;
+ 04AE				no8 proc far
+ 04AE  50			PUSH AX
+ 04AF  53			    PUSH BX
+ 04B0  51			    PUSH CX
+ 04B1  52			    PUSH DX
+ 04B2  51			    PUSH CX
+ 04B3  52			    PUSH DX
+				    ; Open file
+				
+ 04B4  B4 3D			    MOV AH, 3Dh
+ 04B6  B0 00			    MOV AL, 0 ; read only
+ 04B8  8D 16 68DF R		    LEA DX, Filename8
+ 04BC  CD 21			    INT 21h
+ 04BE  A3 68E7 R		    MOV [Filehandle8], AX
+				    ;;;;;;;;;;;read data
+ 04C1  B4 3F			    MOV AH,3Fh
+ 04C3  8B 1E 68E7 R		    MOV BX, [Filehandle8]
+ 04C7  B9 0F3C			    MOV CX,Width8*Height8 ; number of bytes to 
+				read
+ 04CA  8D 16 68E9 R		    LEA DX,Data8
+ 04CE  CD 21			    INT 21h
+				    ;;;;;;;;;;;;;;;;;;
+					
+ 04D0  8D 1E 68E9 R		    LEA BX , Data8 ; BL contains index at the c
+				urrent drawn pixel
+ 04D4  5A			    POP DX
+ 04D5  59			    POP CX
+ 04D6  89 16 0002 R		    MOV he,dx
+ 04DA  89 0E 0000 R		    MOV wi,cx
+ 04DE  83 06 0002 R 27		    add he,39
+ 04E3  83 06 0000 R 19		    add wi,25
+ 04E8  83 E9 19			    SUB CX,25       ;;;;;;ADJUST TO TOP LEFT
+ 04EB  83 EA 2F			    SUB DX,47
+ 04EE  89 0E 0004 R		    MOV BEGX,CX
+ 04F2  B4 0C			    MOV AH,0ch
+ 04F4  8B DA			    mov bx,dx
+ 04F6  83 C3 08				add bx,8
+ 04F9  B0 0F				mov al,0fh
+ 04FB  B4 0C				mov ah,0ch
+ 04FD					clry8:
+ 04FD					      clrx8: 
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:24
+                                                             Page     1-17
+
+
+ 04FD  CD 10				      int 10h
+ 04FF  41			   	      inc cx
+ 0500  3B 0E 0000 R			      cmp cx,wi
+ 0504  75 F7				      jnz clrx8
+ 0506  8B 0E 0004 R			mov cx,begx
+ 050A  42				inc dx
+ 050B  3B D3				cmp dx,bx
+ 050D  75 EE				jnz clry8
+ 050F  8D 1E 68E9 R		  LEA BX , Data8 ; BL contains index at the cur
+				rent drawn pixel
+				  
+				; Drawing loop
+ 0513				drawLoopL8:
+ 0513  8A 07			    MOV AL,[BX]
+ 0515  CD 10			    INT 10h 
+ 0517  41			    INC CX
+ 0518  43			    INC BX
+ 0519  3B 0E 0000 R		    CMP CX,wi
+ 051D  75 F4			JNE drawLoopL8 	
+ 051F  8B 0E 0004 R		    MOV CX ,BEGX	
+ 0523  42			    INC DX
+ 0524  3B 16 0002 R		    CMP DX , he
+ 0528  75 E9			JNE drawLoopL8
+				
+				    ;;;;;;;;;;;;;;;;close file
+ 052A  B4 3E			    MOV AH, 3Eh
+ 052C  8B 1E 68E7 R		    MOV BX, [Filehandle8]
+ 0530  CD 21			    INT 21h
+				
+ 0532  5A			    POP DX
+ 0533  59			    POP CX
+ 0534  5B			    POP BX
+ 0535  58			    POP AX
+ 0536  CB			ret 
+ 0537				no8 endp 
+				;;;;
+ 0537				no9 proc far
+ 0537  50			PUSH AX
+ 0538  53			    PUSH BX
+ 0539  51			    PUSH CX
+ 053A  52			    PUSH DX
+ 053B  51			    PUSH CX
+ 053C  52			    PUSH DX
+				    ; Open file
+				
+ 053D  B4 3D			    MOV AH, 3Dh
+ 053F  B0 00			    MOV AL, 0 ; read only
+ 0541  8D 16 7825 R		    LEA DX, Filename9
+ 0545  CD 21			    INT 21h
+ 0547  A3 782D R		    MOV [Filehandle9], AX
+				    ;;;;;;;;;;;read data
+ 054A  B4 3F			    MOV AH,3Fh
+ 054C  8B 1E 782D R		    MOV BX, [Filehandle9]
+ 0550  B9 10CC			    MOV CX,Width9*Height9 ; number of bytes to 
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:24
+                                                             Page     1-18
+
+
+				read
+ 0553  8D 16 782F R		    LEA DX, Data9
+ 0557  CD 21			    INT 21h
+				    ;;;;;;;;;;;;;;;;;;
+					
+ 0559  8D 1E 782F R		    LEA BX , Data9 ; BL contains index at the c
+				urrent drawn pixel
+ 055D  5A			    POP DX
+ 055E  59			    POP CX
+ 055F  89 16 0002 R		    MOV he,dx
+ 0563  89 0E 0000 R		    MOV wi,cx
+ 0567  83 06 0002 R 2B		    add he,43
+ 056C  83 06 0000 R 19		    add wi,25
+ 0571  83 E9 19			    SUB CX,25       ;;;;;;ADJUST TO TOP LEFT
+ 0574  83 EA 2B			    SUB DX,43
+ 0577  89 0E 0004 R		    MOV BEGX,CX
+ 057B  B4 0C			    MOV AH,0ch
+				  
+				; Drawing loop
+ 057D				drawLoopL9:
+ 057D  8A 07			    MOV AL,[BX]
+ 057F  CD 10			    INT 10h 
+ 0581  41			    INC CX
+ 0582  43			    INC BX
+ 0583  3B 0E 0000 R		    CMP CX,wi
+ 0587  75 F4			JNE drawLoopL9	
+ 0589  8B 0E 0004 R		    MOV CX ,BEGX	
+ 058D  42			    INC DX
+ 058E  3B 16 0002 R		    CMP DX , he
+ 0592  75 E9			JNE drawLoopL9
+				
+				    ;;;;;;;;;;;;;;;;close file
+ 0594  B4 3E			    MOV AH, 3Eh
+ 0596  8B 1E 782D R		    MOV BX, [Filehandle9]
+ 059A  CD 21			    INT 21h
+				
+ 059C  5A			    POP DX
+ 059D  59			    POP CX
+ 059E  5B			    POP BX
+ 059F  58			    POP AX
+ 05A0  CB			ret 
+ 05A1				no9 endp   
+				;;;;
+				END
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:24
+                                                             Symbols-1
+
+
+Segments and Groups:
+
+                N a m e         	Length	 Align	Combine Class
+
+DGROUP . . . . . . . . . . . . .  	GROUP
+  _DATA  . . . . . . . . . . . .  	88FB	WORD	PUBLIC	'DATA'
+  STACK  . . . . . . . . . . . .  	0040	PARA	STACK	'STACK'
+GRAPHICS_TEXT  . . . . . . . . .  	05A1	WORD	PUBLIC	'CODE'
+
+Symbols:            
+
+                N a m e         	Type	 Value	 Attr
+
+BEGX . . . . . . . . . . . . . .  	L WORD	0004	_DATA
+
+CLRX0  . . . . . . . . . . . . .  	L NEAR	00B9	GRAPHICS_TEXT
+CLRX1  . . . . . . . . . . . . .  	L NEAR	013E	GRAPHICS_TEXT
+CLRX2  . . . . . . . . . . . . .  	L NEAR	01C7	GRAPHICS_TEXT
+CLRX3  . . . . . . . . . . . . .  	L NEAR	0250	GRAPHICS_TEXT
+CLRX4  . . . . . . . . . . . . .  	L NEAR	02D9	GRAPHICS_TEXT
+CLRX5  . . . . . . . . . . . . .  	L NEAR	0362	GRAPHICS_TEXT
+CLRX6  . . . . . . . . . . . . .  	L NEAR	03EB	GRAPHICS_TEXT
+CLRX7  . . . . . . . . . . . . .  	L NEAR	0474	GRAPHICS_TEXT
+CLRX8  . . . . . . . . . . . . .  	L NEAR	04FD	GRAPHICS_TEXT
+CLRY0  . . . . . . . . . . . . .  	L NEAR	00B9	GRAPHICS_TEXT
+CLRY1  . . . . . . . . . . . . .  	L NEAR	013E	GRAPHICS_TEXT
+CLRY2  . . . . . . . . . . . . .  	L NEAR	01C7	GRAPHICS_TEXT
+CLRY3  . . . . . . . . . . . . .  	L NEAR	0250	GRAPHICS_TEXT
+CLRY4  . . . . . . . . . . . . .  	L NEAR	02D9	GRAPHICS_TEXT
+CLRY5  . . . . . . . . . . . . .  	L NEAR	0362	GRAPHICS_TEXT
+CLRY6  . . . . . . . . . . . . .  	L NEAR	03EB	GRAPHICS_TEXT
+CLRY7  . . . . . . . . . . . . .  	L NEAR	0474	GRAPHICS_TEXT
+CLRY8  . . . . . . . . . . . . .  	L NEAR	04FD	GRAPHICS_TEXT
+
+DATA0  . . . . . . . . . . . . .  	L BYTE	068D	_DATA	Length = 0E74
+DATA1  . . . . . . . . . . . . .  	L BYTE	150B	_DATA	Length = 0F3C
+DATA2  . . . . . . . . . . . . .  	L BYTE	2451	_DATA	Length = 0A5A
+DATA3  . . . . . . . . . . . . .  	L BYTE	2EB5	_DATA	Length = 09C4
+DATA4  . . . . . . . . . . . . .  	L BYTE	3883	_DATA	Length = 0E74
+DATA5  . . . . . . . . . . . . .  	L BYTE	4701	_DATA	Length = 09C4
+DATA6  . . . . . . . . . . . . .  	L BYTE	50CF	_DATA	Length = 0B54
+DATA7  . . . . . . . . . . . . .  	L BYTE	5C2D	_DATA	Length = 0CB2
+DATA8  . . . . . . . . . . . . .  	L BYTE	68E9	_DATA	Length = 0F3C
+DATA9  . . . . . . . . . . . . .  	L BYTE	782F	_DATA	Length = 10CC
+DRAWLOOPL  . . . . . . . . . . .  	L NEAR	0046	GRAPHICS_TEXT
+DRAWLOOPL0 . . . . . . . . . . .  	L NEAR	00CF	GRAPHICS_TEXT
+DRAWLOOPL1 . . . . . . . . . . .  	L NEAR	0154	GRAPHICS_TEXT
+DRAWLOOPL2 . . . . . . . . . . .  	L NEAR	01DD	GRAPHICS_TEXT
+DRAWLOOPL3 . . . . . . . . . . .  	L NEAR	0266	GRAPHICS_TEXT
+DRAWLOOPL4 . . . . . . . . . . .  	L NEAR	02EF	GRAPHICS_TEXT
+DRAWLOOPL5 . . . . . . . . . . .  	L NEAR	0378	GRAPHICS_TEXT
+DRAWLOOPL6 . . . . . . . . . . .  	L NEAR	0401	GRAPHICS_TEXT
+DRAWLOOPL7 . . . . . . . . . . .  	L NEAR	048A	GRAPHICS_TEXT
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:24
+                                                             Symbols-2
+
+
+DRAWLOOPL8 . . . . . . . . . . .  	L NEAR	0513	GRAPHICS_TEXT
+DRAWLOOPL9 . . . . . . . . . . .  	L NEAR	057D	GRAPHICS_TEXT
+
+FILEHANDLE0  . . . . . . . . . .  	L WORD	068B	_DATA
+FILEHANDLE1  . . . . . . . . . .  	L WORD	1509	_DATA
+FILEHANDLE2  . . . . . . . . . .  	L WORD	244F	_DATA
+FILEHANDLE3  . . . . . . . . . .  	L WORD	2EB3	_DATA
+FILEHANDLE4  . . . . . . . . . .  	L WORD	3881	_DATA
+FILEHANDLE5  . . . . . . . . . .  	L WORD	46FF	_DATA
+FILEHANDLE6  . . . . . . . . . .  	L WORD	50CD	_DATA
+FILEHANDLE7  . . . . . . . . . .  	L WORD	5C2B	_DATA
+FILEHANDLE8  . . . . . . . . . .  	L WORD	68E7	_DATA
+FILEHANDLE9  . . . . . . . . . .  	L WORD	782D	_DATA
+FILENAME0  . . . . . . . . . . .  	L BYTE	0683	_DATA
+FILENAME1  . . . . . . . . . . .  	L BYTE	1501	_DATA
+FILENAME2  . . . . . . . . . . .  	L BYTE	2447	_DATA
+FILENAME3  . . . . . . . . . . .  	L BYTE	2EAB	_DATA
+FILENAME4  . . . . . . . . . . .  	L BYTE	3879	_DATA
+FILENAME5  . . . . . . . . . . .  	L BYTE	46F7	_DATA
+FILENAME6  . . . . . . . . . . .  	L BYTE	50C5	_DATA
+FILENAME7  . . . . . . . . . . .  	L BYTE	5C23	_DATA
+FILENAME8  . . . . . . . . . . .  	L BYTE	68DF	_DATA
+FILENAME9  . . . . . . . . . . .  	L BYTE	7825	_DATA
+
+HE . . . . . . . . . . . . . . .  	L WORD	0002	_DATA
+HEIGHT0  . . . . . . . . . . . .  	NUMBER	004A	
+HEIGHT1  . . . . . . . . . . . .  	NUMBER	004E	
+HEIGHT2  . . . . . . . . . . . .  	NUMBER	0035	
+HEIGHT3  . . . . . . . . . . . .  	NUMBER	0032	
+HEIGHT4  . . . . . . . . . . . .  	NUMBER	004A	
+HEIGHT5  . . . . . . . . . . . .  	NUMBER	0032	
+HEIGHT6  . . . . . . . . . . . .  	NUMBER	003A	
+HEIGHT7  . . . . . . . . . . . .  	NUMBER	0041	
+HEIGHT8  . . . . . . . . . . . .  	NUMBER	004E	
+HEIGHT9  . . . . . . . . . . . .  	NUMBER	0056	
+
+NO0  . . . . . . . . . . . . . .  	F PROC	006A	GRAPHICS_TEXT	Global	Length = 0089
+NO1  . . . . . . . . . . . . . .  	F PROC	00F3	GRAPHICS_TEXT	Global	Length = 0085
+NO2  . . . . . . . . . . . . . .  	F PROC	0178	GRAPHICS_TEXT	Global	Length = 0089
+NO3  . . . . . . . . . . . . . .  	F PROC	0201	GRAPHICS_TEXT	Global	Length = 0089
+NO4  . . . . . . . . . . . . . .  	F PROC	028A	GRAPHICS_TEXT	Global	Length = 0089
+NO5  . . . . . . . . . . . . . .  	F PROC	0313	GRAPHICS_TEXT	Global	Length = 0089
+NO6  . . . . . . . . . . . . . .  	F PROC	039C	GRAPHICS_TEXT	Global	Length = 0089
+NO7  . . . . . . . . . . . . . .  	F PROC	0425	GRAPHICS_TEXT	Global	Length = 0089
+NO8  . . . . . . . . . . . . . .  	F PROC	04AE	GRAPHICS_TEXT	Global	Length = 0089
+NO9  . . . . . . . . . . . . . .  	F PROC	0537	GRAPHICS_TEXT	Global	Length = 006A
+
+PECADATA . . . . . . . . . . . .  	L BYTE	0011	_DATA	Length = 0672
+PECAFILEHANDLE . . . . . . . . .  	L WORD	000F	_DATA
+PECAFILENAME . . . . . . . . . .  	L BYTE	0006	_DATA
+PECAHEIGHT . . . . . . . . . . .  	NUMBER	0021	
+PECAWIDTH  . . . . . . . . . . .  	NUMBER	0032	
+PLAYER . . . . . . . . . . . . .  	F PROC	0000	GRAPHICS_TEXT	Global	Length = 006A
+
+Microsoft (R) Macro Assembler Version 5.10                  1/29/20 10:38:24
+                                                             Symbols-3
+
+
+WI . . . . . . . . . . . . . . .  	L WORD	0000	_DATA
+WIDTH0 . . . . . . . . . . . . .  	NUMBER	0032	
+WIDTH1 . . . . . . . . . . . . .  	NUMBER	0032	
+WIDTH2 . . . . . . . . . . . . .  	NUMBER	0032	
+WIDTH3 . . . . . . . . . . . . .  	NUMBER	0032	
+WIDTH4 . . . . . . . . . . . . .  	NUMBER	0032	
+WIDTH5 . . . . . . . . . . . . .  	NUMBER	0032	
+WIDTH6 . . . . . . . . . . . . .  	NUMBER	0032	
+WIDTH7 . . . . . . . . . . . . .  	NUMBER	0032	
+WIDTH8 . . . . . . . . . . . . .  	NUMBER	0032	
+WIDTH9 . . . . . . . . . . . . .  	NUMBER	0032	
+
+@CODE  . . . . . . . . . . . . .  	TEXT  graphics_TEXT		
+@CODESIZE  . . . . . . . . . . .  	TEXT  1		
+@CPU . . . . . . . . . . . . . .  	TEXT  0101h		
+@DATASIZE  . . . . . . . . . . .  	TEXT  1		
+@FILENAME  . . . . . . . . . . .  	TEXT  graphics		
+@VERSION . . . . . . . . . . . .  	TEXT  510		
+
+
+    888 Source  Lines
+    888 Total   Lines
+    115 Symbols
+
+  47914 + 440911 Bytes symbol space free
+
+      0 Warning Errors
+      0 Severe  Errors
